@@ -7,11 +7,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-console.log('this is a build for cors');
 // CORS configuration
 //@ts-ignore
 app.use((req, res, next) => {
-	console.log('here cors goddamnit');
 	// Set Cache-Control headers
 	res.set(
 		'Cache-Control',
@@ -22,7 +20,7 @@ app.use((req, res, next) => {
 	res.set('Surrogate-Control', 'no-store');
 
 	// Set CORS headers
-	res.header('Access-Control-Allow-Origin', '*');
+	res.header('Access-Control-Allow-Origin', 'https://atelieruldebaterii.ro');
 	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 	res.header(
 		'Access-Control-Allow-Headers',
@@ -44,11 +42,6 @@ app.use(express.json());
 // Routes
 app.use('/products', productRoutes);
 app.use('/search-products', searchProducts);
-// Basic health check
-app.get('/', (req, res) => {
-	res.send('WooCommerce API Integration is running 123 123 1');
-});
-
 // Start the server
 app.listen(PORT, () => {
 	console.log(`Server running on http://localhost:${PORT}`);
