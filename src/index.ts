@@ -24,12 +24,21 @@ const corsOptions = {
 	allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 };
 
-// app.use(express.json());
+app.use(express.json());
 
 // Routes
 app.use('/products', productRoutes);
 
 app.use('/search-products', searchProducts);
+
+app.use(function (req, res, next) {
+	res.setHeader('Access-Control-Allow-Origin', 'https://atelieruldebaterii.ro');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+	// @ts-ignore
+	res.setHeader('Access-Control-Allow-Credentials', true);
+	next();
+});
 
 // Basic health check
 app.get('/', (req, res) => {
