@@ -7,26 +7,39 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const search_products_1 = __importDefault(require("./routes/search-products"));
-// @ts-ignore
-const cors_1 = __importDefault(require("cors"));
+//@ts-check
 dotenv_1.default.config();
-// CORS configuration for specific origins
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
-// Middleware
-const corsOptions = {
-    origin: 'http://localhost:3000', // Frontend domain
-    methods: ['GET', 'POST'], // Allowed methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-};
-app.use((0, cors_1.default)(corsOptions)); // Apply CORS to all routes
+console.log('this is a build for cors');
+// CORS configuration
+//@ts-ignore
+app.use((req, res, next) => {
+    console.log('here cors goddamnit');
+    // Set Cache-Control headers
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+    // Set CORS headers
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
+    // Handle preflight OPTIONS requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    // Pass control to the next middleware
+    next();
+});
+// Middleware to parse JSON
 app.use(express_1.default.json());
 // Routes
 app.use('/products', productRoutes_1.default);
 app.use('/search-products', search_products_1.default);
 // Basic health check
 app.get('/', (req, res) => {
-    res.send('WooCommerce API Integration is running');
+    res.send('WooCommerce API Integration is running 123 123 1');
 });
 // Start the server
 app.listen(PORT, () => {

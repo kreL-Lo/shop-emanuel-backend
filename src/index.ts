@@ -44,10 +44,9 @@ app.use(express.json());
 // Routes
 app.use('/products', productRoutes);
 app.use('/search-products', searchProducts);
-
 // Basic health check
 app.get('/', (req, res) => {
-	res.send('WooCommerce API Integration is running');
+	res.send('WooCommerce API Integration is running 123 123 1');
 });
 
 // Start the server
