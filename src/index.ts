@@ -14,7 +14,13 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 
 const corsOptions = {
-	origin: 'https://atelieruldebaterii.ro', // Frontend domain
+	origin: [
+		'https://atelieruldebaterii.ro',
+		'http://localhost:3000',
+		'https://www.atelieruldebaterii.ro/',
+		'http://atelieruldebaterii.ro',
+		'attelieruldebaterii.ro',
+	], // Frontend domain
 	methods: ['GET', 'POST'], // Allowed methods
 	allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 };
