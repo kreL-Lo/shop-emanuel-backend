@@ -2,26 +2,16 @@ import express from 'express';
 import dotenv from 'dotenv';
 import productRoutes from './routes/productRoutes';
 import searchProducts from './routes/search-products';
-// @ts-ignore
-import cors from 'cors';
-
+//@ts-check
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // CORS configuration
-const corsOptions = {
-	origin: 'https://atelieruldebaterii.ro', // Your frontend's URL
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization'],
-	credentials: true, // Allow cookies/auth headers if necessary
-};
-
-// Apply CORS middleware
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+//@ts-ignore
 app.use((req, res, next) => {
+	// Set Cache-Control headers
 	res.set(
 		'Cache-Control',
 		'no-store, no-cache, must-revalidate, proxy-revalidate'
@@ -29,24 +19,26 @@ app.use((req, res, next) => {
 	res.set('Pragma', 'no-cache');
 	res.set('Expires', '0');
 	res.set('Surrogate-Control', 'no-store');
-	// set header
-	res.header('Allow-Control-Allow-Origin', '*');
+
+	// Set CORS headers
+	res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 	res.header(
 		'Access-Control-Allow-Headers',
 		'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With'
 	);
-	res.header('Access-Control-Allow-Credentials', 'true');
-	// pass to next layer of middleware
 
+	// Handle preflight OPTIONS requests
+	if (req.method === 'OPTIONS') {
+		return res.status(200).end();
+	}
+
+	// Pass control to the next middleware
 	next();
 });
+
 // Middleware to parse JSON
 app.use(express.json());
-
-// Handle preflight OPTIONS requests globally
-
-// Cache control for dynamic content
 
 // Routes
 app.use('/products', productRoutes);
