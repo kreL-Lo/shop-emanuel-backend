@@ -33,9 +33,6 @@ function snakeToCamelCase(obj: any) {
 }
 
 // Axios instance setup
-console.log('here', process.env.WOO_BASE_URL);
-console.log('here', process.env.WOO_CONSUMER_KEY);
-console.log('here', process.env.WOO_CONSUMER_SECRET);
 const wooCommerceApi = axios.create({
 	baseURL: `${process.env.WOO_BASE_URL}/wp-json/wc/v3`,
 	auth: {
