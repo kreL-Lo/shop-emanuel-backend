@@ -12,30 +12,22 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const corsOptions = {
-	origin: '*', // Allow all origins. Replace '*' with specific origins if needed.
+	origin: 'https://atelieruldebaterii.ro', // Your frontend's URL
 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 	allowedHeaders: ['Content-Type', 'Authorization'],
-	credentials: false, // Set to true if cookies/auth headers are needed
+	credentials: true, // Allow cookies/auth headers if necessary
 };
 
-// Global CORS headers
-app.use((req, res, next) => {
-	res.header('Access-Control-Allow-Origin', '*'); // Replace '*' with the frontend's URL if necessary
-	res.header(
-		'Access-Control-Allow-Headers',
-		'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-	);
-	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-	next();
-});
-
-// Handle preflight OPTIONS requests globally
-app.options('*', cors(corsOptions));
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 // Middleware to parse JSON
 app.use(express.json());
 
-// Caching headers for dynamic content
+// Handle preflight OPTIONS requests globally
+app.options('*', cors(corsOptions));
+
+// Cache control for dynamic content
 app.use((req, res, next) => {
 	res.set(
 		'Cache-Control',
