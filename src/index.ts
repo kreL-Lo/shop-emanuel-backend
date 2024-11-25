@@ -21,13 +21,6 @@ const corsOptions = {
 // Apply CORS middleware
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-
-// Middleware to parse JSON
-app.use(express.json());
-
-// Handle preflight OPTIONS requests globally
-
-// Cache control for dynamic content
 app.use((req, res, next) => {
 	res.set(
 		'Cache-Control',
@@ -36,8 +29,24 @@ app.use((req, res, next) => {
 	res.set('Pragma', 'no-cache');
 	res.set('Expires', '0');
 	res.set('Surrogate-Control', 'no-store');
+	// set header
+	res.header('Allow-Control-Allow-Origin', '*');
+	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+	res.header(
+		'Access-Control-Allow-Headers',
+		'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With'
+	);
+	res.header('Access-Control-Allow-Credentials', 'true');
+	// pass to next layer of middleware
+
 	next();
 });
+// Middleware to parse JSON
+app.use(express.json());
+
+// Handle preflight OPTIONS requests globally
+
+// Cache control for dynamic content
 
 // Routes
 app.use('/products', productRoutes);
