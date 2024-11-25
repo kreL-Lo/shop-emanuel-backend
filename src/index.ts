@@ -16,7 +16,6 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
 	origin: [
 		'https://atelieruldebaterii.ro',
-		'http://localhost:3000',
 		'https://www.atelieruldebaterii.ro/',
 		'http://atelieruldebaterii.ro',
 		'attelieruldebaterii.ro',
@@ -25,11 +24,7 @@ const corsOptions = {
 	allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 };
 
-app.options('*', cors(corsOptions)); // Handle preflight requests for all routes
-
-app.use(cors(corsOptions)); // Apply CORS to all routes
-
-app.use(express.json());
+// app.use(express.json());
 
 // Routes
 app.use('/products', productRoutes);
@@ -40,6 +35,10 @@ app.use('/search-products', searchProducts);
 app.get('/', (req, res) => {
 	res.send('WooCommerce API Integration is running');
 });
+
+app.options('*', cors(corsOptions)); // Handle preflight requests for all routes
+
+app.use(cors(corsOptions)); // Apply CORS to all routes
 
 // Start the server
 app.listen(PORT, () => {
