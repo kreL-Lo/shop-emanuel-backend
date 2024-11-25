@@ -20,12 +20,12 @@ const corsOptions = {
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Middleware to parse JSON
 app.use(express.json());
 
 // Handle preflight OPTIONS requests globally
-app.options('*', cors(corsOptions));
 
 // Cache control for dynamic content
 app.use((req, res, next) => {
