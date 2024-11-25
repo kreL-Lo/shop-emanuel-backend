@@ -12,12 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 const corsOptions = {
-	origin: [
-		'https://atelieruldebaterii.ro',
-		'https://www.atelieruldebaterii.ro',
-		'http://atelieruldebaterii.ro',
-		'attelieruldebaterii.ro',
-	],
+	origin: '*',
 	methods: ['GET', 'POST'],
 	allowedHeaders: ['Content-Type', 'Authorization'],
 	credentials: true, // Allow cookies if needed
