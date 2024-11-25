@@ -7,10 +7,11 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+console.log('this is a build for cors');
 // CORS configuration
 //@ts-ignore
 app.use((req, res, next) => {
+	console.log('here cors goddamnit');
 	// Set Cache-Control headers
 	res.set(
 		'Cache-Control',
