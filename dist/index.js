@@ -9,6 +9,7 @@ const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const search_products_1 = __importDefault(require("./routes/search-products"));
 //@ts-check
 dotenv_1.default.config();
+const allowedOrigins = '*';
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // CORS configuration
@@ -20,7 +21,7 @@ app.use((req, res, next) => {
     res.set('Expires', '0');
     res.set('Surrogate-Control', 'no-store');
     // Set CORS headers
-    res.header('Access-Control-Allow-Origin', 'https://atelieruldebaterii.ro');
+    res.header('Access-Control-Allow-Origin', allowedOrigins);
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
     // Handle preflight OPTIONS requests
