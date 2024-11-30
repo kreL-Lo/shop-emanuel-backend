@@ -49,5 +49,16 @@ router.get('/noutati', async (req, res) => {
 		res.status(500).json({ error: 'Failed to fetch products' });
 	}
 });
+router.get('/product/:id', async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const response = await wooCommerceApi.get(`/products/${id}`);
+		res.json(response.data);
+	} catch (error) {
+		console.error('Error fetching product:', error.message);
+		res.status(500).json({ error: 'Failed to fetch product' });
+	}
+});
 
 export default router;
