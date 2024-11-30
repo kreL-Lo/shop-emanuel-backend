@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import productRoutes from './routes/productRoutes';
-import searchProducts from './routes/search-products';
+
+import allRoutes from './routes/index';
 //@ts-check
 dotenv.config();
 const allowedOrigins = '*';
@@ -39,10 +39,8 @@ app.use((req, res, next) => {
 // Middleware to parse JSON
 app.use(express.json());
 
-// Routes
-app.use('/products', productRoutes);
-app.use('/search-products', searchProducts);
-// Start the server
+app.use('/', allRoutes);
+
 app.listen(PORT, () => {
 	console.log(`Server running on http://localhost:${PORT}`);
 });
