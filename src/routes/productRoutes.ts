@@ -5,12 +5,13 @@ import wooCommerceApi from '../apiSetup/wooCommerceApi';
 const router = Router();
 
 // Fetch Products Route
-router.get('/', async (req, res) => {
+router.get('/search/:name', async (req, res) => {
 	const { page = 1, per_page = 30 } = req.query; // Default: page 1, 10 products per page
-
+	const { name } = req.params;
 	try {
 		const response = await wooCommerceApi.get(`/products`, {
 			params: {
+				search: name,
 				page,
 				per_page,
 			},
