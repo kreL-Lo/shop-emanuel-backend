@@ -5,8 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
-const search_products_1 = __importDefault(require("./routes/search-products"));
+const index_1 = __importDefault(require("./routes/index"));
 //@ts-check
 dotenv_1.default.config();
 const allowedOrigins = '*';
@@ -33,10 +32,7 @@ app.use((req, res, next) => {
 });
 // Middleware to parse JSON
 app.use(express_1.default.json());
-// Routes
-app.use('/products', productRoutes_1.default);
-app.use('/search-products', search_products_1.default);
-// Start the server
+app.use('/', index_1.default);
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
