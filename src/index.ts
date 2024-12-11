@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 
 import allRoutes from './routes/index';
+import webHookRouter from './routes/payment/webhook';
 //@ts-check
 dotenv.config();
 const allowedOrigins = '*';
@@ -37,6 +38,11 @@ app.use((req, res, next) => {
 });
 
 // Middleware to parse JSON
+app.post(
+	'/stripe-webhook',
+	express.raw({ type: 'application/json' }),
+	webHookRouter
+);
 app.use(express.json());
 
 app.use('/', allRoutes);

@@ -8,9 +8,12 @@ const categories_1 = __importDefault(require("./categories/categories"));
 const productRoutes_1 = __importDefault(require("./productRoutes"));
 const search_products_1 = __importDefault(require("./search-products"));
 const cart_1 = __importDefault(require("./cart/cart"));
+const payment_1 = __importDefault(require("./payment/payment"));
 const router = (0, express_1.Router)();
 router.use('/categories', categories_1.default);
 router.use('/products', productRoutes_1.default);
 router.use('/search-products', search_products_1.default);
 router.use('/cart', cart_1.default);
+// use express.raw
+router.use('/payments', payment_1.default);
 exports.default = router;
