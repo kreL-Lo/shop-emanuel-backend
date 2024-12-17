@@ -2,7 +2,7 @@ import { Router } from 'express';
 import express from 'express';
 import dotenv from 'dotenv';
 import Stripe from 'stripe';
-import { updateWooCommerceOrder } from './payment';
+import { updateWooCommerceOrderStatus } from '../../functions/orders/updateWoocommerceOrder';
 dotenv.config();
 // @ts-ignore
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -30,13 +30,9 @@ const stripeWebook = async (req, res) => {
 	if (event.type === 'payment_intent.succeeded') {
 		const paymentIntent = event.data.object;
 		const orderId = paymentIntent.metadata.order_id;
-
-		console.log(`Payment for Order ${orderId} succeeded.`);
-
 		try {
 			// Update WooCommerce order status
-			await updateWooCommerceOrder(orderId, 'completed');
-			console.log(`Order ${orderId} updated to completed.`);
+			await updateWooCommerceOrderStatus({ orderId, status: 'completed' });
 		} catch (error) {
 			// @ts-ignore
 			console.error(`Error updating WooCommerce order: ${error.message}`);
