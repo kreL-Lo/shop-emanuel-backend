@@ -27,7 +27,6 @@ export const createWooCommerceOrder = async ({
 				product_id: item.productId,
 				quantity: item.quantity,
 			})),
-			price: totalPrice,
 		};
 
 		const response = await wooCommerceApi.post('orders', orderData);

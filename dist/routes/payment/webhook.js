@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const stripe_1 = __importDefault(require("stripe"));
-const payment_1 = require("./payment");
+const updateWoocommerceOrder_1 = require("../../functions/orders/updateWoocommerceOrder");
 dotenv_1.default.config();
 // @ts-ignore
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
@@ -40,11 +40,9 @@ const stripeWebook = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     if (event.type === 'payment_intent.succeeded') {
         const paymentIntent = event.data.object;
         const orderId = paymentIntent.metadata.order_id;
-        console.log(`Payment for Order ${orderId} succeeded.`);
         try {
             // Update WooCommerce order status
-            yield (0, payment_1.updateWooCommerceOrder)(orderId, 'completed');
-            console.log(`Order ${orderId} updated to completed.`);
+            yield (0, updateWoocommerceOrder_1.updateWooCommerceOrderStatus)({ orderId, status: 'completed' });
         }
         catch (error) {
             // @ts-ignore

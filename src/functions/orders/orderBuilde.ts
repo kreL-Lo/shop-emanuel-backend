@@ -15,6 +15,6 @@ export type OrderData = {
 	deliveryAddress: Address;
 	billingAddress: Address;
 	paymentMethod: MetodaPlata;
-	deliveryMethod: 'livrare';
+	deliveryMethod: 'ramburs' | 'card';
 	email: string;
 };

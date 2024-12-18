@@ -9,6 +9,10 @@ const allowedOrigins = '*';
 const app = express();
 const PORT = process.env.PORT || 3000;
 // CORS configuration
+const webhookRawBodyParser = express.raw({ type: 'application/json' });
+
+app.post('/webhook', webhookRawBodyParser, webHookRouter);
+
 //@ts-ignore
 app.use((req, res, next) => {
 	// Set Cache-Control headers
@@ -38,7 +42,6 @@ app.use((req, res, next) => {
 });
 
 // Middleware to parse JSON
-app.post('/webhook', express.raw({ type: 'application/json' }), webHookRouter);
 app.use(express.json());
 
 app.use('/', allRoutes);

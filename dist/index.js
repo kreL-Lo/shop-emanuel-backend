@@ -32,7 +32,7 @@ app.use((req, res, next) => {
     next();
 });
 // Middleware to parse JSON
-app.post('/stripe-webhook', express_1.default.raw({ type: 'application/json' }), webhook_1.default);
+app.post('/webhook', express_1.default.raw({ type: 'application/json' }), webhook_1.default);
 app.use(express_1.default.json());
 app.use('/', index_1.default);
 app.listen(PORT, () => {
