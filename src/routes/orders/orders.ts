@@ -7,6 +7,9 @@ import { Product } from '../../types/product';
 dotenv.config();
 
 const key = Buffer.from(process.env.ORDER_ENCRIPTION_KEY || '', 'hex');
+
+//test encryption
+
 export const encryptOrderId = (orderId: string | number) => {
 	const iv = crypto.randomBytes(16); // Generate a 16-byte initialization vector
 	const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -34,6 +37,12 @@ export const decryptOrderId = (encryptedOrderId: string) => {
 
 	return decrypted.toString('utf-8');
 };
+
+const orderId = '1234';
+const encryptedOrderId = encryptOrderId(orderId);
+console.log(encryptedOrderId);
+const decryptedOrderId = decryptOrderId(encryptedOrderId);
+console.log(decryptedOrderId);
 
 type ProductWithQuantity = {
 	product: Product;

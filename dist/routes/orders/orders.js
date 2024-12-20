@@ -19,6 +19,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const wooCommerceApi_1 = __importDefault(require("../../apiSetup/wooCommerceApi"));
 dotenv_1.default.config();
 const key = Buffer.from(process.env.ORDER_ENCRIPTION_KEY || '', 'hex');
+//test encryption
 const encryptOrderId = (orderId) => {
     const iv = crypto_1.default.randomBytes(16); // Generate a 16-byte initialization vector
     const cipher = crypto_1.default.createCipheriv('aes-256-cbc', key, iv);
@@ -41,6 +42,11 @@ const decryptOrderId = (encryptedOrderId) => {
     return decrypted.toString('utf-8');
 };
 exports.decryptOrderId = decryptOrderId;
+const orderId = '1234';
+const encryptedOrderId = (0, exports.encryptOrderId)(orderId);
+console.log(encryptedOrderId);
+const decryptedOrderId = (0, exports.decryptOrderId)(encryptedOrderId);
+console.log(decryptedOrderId);
 const router = (0, express_1.Router)();
 router.get('/order/:orderKey', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
