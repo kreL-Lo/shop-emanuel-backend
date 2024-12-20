@@ -18,6 +18,7 @@ const stripe_1 = __importDefault(require("stripe"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const computeProductItemsTotalPrice_1 = require("../../functions/products/computeProductItemsTotalPrice");
 const createOrder_1 = require("../../functions/orders/createOrder");
+const orders_1 = require("../orders/orders");
 dotenv_1.default.config();
 const router = (0, express_1.Router)();
 // Set the secret key to the Stripe API
@@ -25,29 +26,82 @@ const router = (0, express_1.Router)();
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2020-08-27',
 });
+router.post('/check-client-secret', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    try {
+        const clientSecret = (_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.clientSecret;
+        const orderId = (0, orders_1.decryptOrderId)((_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.orderId);
+        const items = (_c = req === null || req === void 0 ? void 0 : req.body) === null || _c === void 0 ? void 0 : _c.items;
+        const paymentIntendId = clientSecret.split('_secret')[0];
+        const paymentIntent = yield stripe.paymentIntents.retrieve(paymentIntendId);
+        const order = yield wooCommerceApi_1.default.get(`orders/${orderId}`);
+        // check metadata  of paymentIntend
+        if (paymentIntent.metadata.order_id !== orderId && order) {
+            res.send({ status: 'failed' });
+            //
+        }
+        else {
+            // if paymentIntent is succeeded
+            if (paymentIntent.status === 'succeeded') {
+                res.send({ status: 'succeeded' });
+            }
+            else if (paymentIntent.status === 'requires_payment_method') {
+                // if items updated
+                const totalPrice = yield (0, computeProductItemsTotalPrice_1.computeProductsTotalPrice)(items);
+                // update order
+                const existingOrderItems = order.data.line_items.map((item) => ({
+                    id: item.id,
+                    quantity: 0,
+                }));
+                const newLineItems = items.map((item) => ({
+                    product_id: item.productId,
+                    quantity: item.quantity,
+                }));
+                yield wooCommerceApi_1.default.patch(`orders/${orderId}`, {
+                    line_items: [...existingOrderItems, ...newLineItems],
+                });
+                // update stripe
+                yield stripe.paymentIntents.update(paymentIntendId, {
+                    amount: totalPrice,
+                });
+                res.send({ status: 'requires_payment_method' });
+            }
+            else {
+                res.send({ status: paymentIntent.status });
+            }
+        }
+    }
+    catch (error) {
+        console.error(error);
+        // @ts-ignore
+        res.status(500).send({ error: error.message });
+    }
+}));
 router.post('/create-payment-intent', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        const productItmes = ((_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.items) || [];
-        const totalPrice = yield (0, computeProductItemsTotalPrice_1.computeProductsTotalPrice)(productItmes);
+        const productItems = ((_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.items) || [];
+        const totalPrice = yield (0, computeProductItemsTotalPrice_1.computeProductsTotalPrice)(productItems);
         // create order
+        // Create Stripe Payment Intent
         const order = yield (0, createOrder_1.createWooCommerceOrder)({
-            items: productItmes,
+            items: productItems,
             totalPrice,
         });
-        // Example order amount in RON (Romanian Lei)
-        // const wooCommerceOrderId = await createWooCommerceOrder();
-        // Create the payment intent in RON
         const paymentIntent = yield stripe.paymentIntents.create({
             amount: totalPrice,
-            currency: 'ron', // Set currency to Romanian Lei
-            payment_method_types: ['card'], // Only allow 'card' as a payment method, preventing Link
+            currency: 'ron', // Romanian Lei
+            payment_method_types: ['card'],
             metadata: {
-                order_id: order.id, // Pass the WooCommerce order ID as metadata
+                // Pass WooCommerce order ID in metadata once it's created
+                order_id: order.id,
             },
         });
+        // Create WooCommerce Order
+        // Update Payment Intent metadata with the correct WooCommerce Order ID
         res.send({
             clientSecret: paymentIntent.client_secret,
+            orderId: (0, orders_1.encryptOrderId)(order.id),
         });
     }
     catch (error) {
@@ -62,7 +116,7 @@ router.post('/update-order-details', (req, res) => __awaiter(void 0, void 0, voi
         //@ts-ignore
         const order = {
             // @ts-ignore
-            id: orderData.id,
+            id: (0, orders_1.decryptOrderId)(orderData.orderId),
             billing: {
                 first_name: orderData.billingAddress.firstName,
                 last_name: orderData.billingAddress.lastName,
@@ -84,16 +138,15 @@ router.post('/update-order-details', (req, res) => __awaiter(void 0, void 0, voi
                 country: orderData.deliveryAddress.county,
                 phone: orderData.deliveryAddress.phone,
             },
-            status: 'processing',
+            status: orderData.deliveryMethod === 'ramburs' ? 'on-hold' : 'pending', //on-hold = ramburs, pending = card
+            payment_method: orderData.deliveryMethod === 'ramburs' ? 'cod' : 'card',
         };
         // Update the WooCommerce order details
-        console.log('orderData', order.id);
         // @ts-ignore
         yield wooCommerceApi_1.default.put(`orders/${order.id}`, Object.assign({}, order));
         res.send({ success: true });
     }
     catch (error) {
-        console.error(error);
         // @ts-ignore
         res.status(500).send({ error: error.message });
     }

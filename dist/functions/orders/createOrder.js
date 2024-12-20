@@ -33,7 +33,6 @@ const createWooCommerceOrder = (_a) => __awaiter(void 0, [_a], void 0, function*
                 product_id: item.productId,
                 quantity: item.quantity,
             })),
-            price: totalPrice,
         };
         const response = yield wooCommerceApi_1.default.post('orders', orderData);
         // @ts-ignore

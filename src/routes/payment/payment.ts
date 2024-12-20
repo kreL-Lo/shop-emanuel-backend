@@ -93,7 +93,6 @@ router.post('/create-payment-intent', async (req, res) => {
 		// Create WooCommerce Order
 
 		// Update Payment Intent metadata with the correct WooCommerce Order ID
-		console.log('order', encryptOrderId(order.id));
 		res.send({
 			clientSecret: paymentIntent.client_secret,
 			orderId: encryptOrderId(order.id),

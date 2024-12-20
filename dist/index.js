@@ -13,6 +13,8 @@ const allowedOrigins = '*';
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // CORS configuration
+const webhookRawBodyParser = express_1.default.raw({ type: 'application/json' });
+app.post('/webhook', webhookRawBodyParser, webhook_1.default);
 //@ts-ignore
 app.use((req, res, next) => {
     // Set Cache-Control headers
@@ -32,7 +34,6 @@ app.use((req, res, next) => {
     next();
 });
 // Middleware to parse JSON
-app.post('/webhook', express_1.default.raw({ type: 'application/json' }), webhook_1.default);
 app.use(express_1.default.json());
 app.use('/', index_1.default);
 app.listen(PORT, () => {
