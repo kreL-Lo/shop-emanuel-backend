@@ -4,7 +4,7 @@ import productRoutes from './productRoutes';
 import searchProducts from './search-products';
 import cartRoutes from './cart/cart';
 import paymentRoutes from './payment/payment';
-import express from 'express';
+import orderRoutes from './orders/orders';
 const router = Router();
 
 router.use('/categories', catgories);
@@ -13,5 +13,5 @@ router.use('/search-products', searchProducts);
 router.use('/cart', cartRoutes);
 // use express.raw
 router.use('/payments', paymentRoutes);
-
+router.use('/orders', orderRoutes);
 export default router;

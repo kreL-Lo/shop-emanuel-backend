@@ -6,6 +6,7 @@ import { computeProductsTotalPrice } from '../../functions/products/computeProdu
 import { createWooCommerceOrder } from '../../functions/orders/createOrder';
 import { OrderData } from '../../functions/orders/orderBuilde';
 import { Order } from '../../types/order';
+import { decryptOrderId, encryptOrderId } from '../orders/orders';
 dotenv.config();
 
 const router = Router();
@@ -19,7 +20,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 router.post('/check-client-secret', async (req, res) => {
 	try {
 		const clientSecret = req?.body?.clientSecret;
-		const orderId = req?.body?.orderId;
+		const orderId = decryptOrderId(req?.body?.orderId);
 		const items = req?.body?.items;
 
 		const paymentIntendId = clientSecret.split('_secret')[0];
@@ -37,14 +38,19 @@ router.post('/check-client-secret', async (req, res) => {
 			} else if (paymentIntent.status === 'requires_payment_method') {
 				// if items updated
 				const totalPrice = await computeProductsTotalPrice(items);
-				console.log('here', totalPrice, items);
 				// update order
+				const existingOrderItems = order.data.line_items.map((item: any) => ({
+					id: item.id,
+					quantity: 0,
+				}));
 
-				await wooCommerceApi.put(`orders/${orderId}`, {
-					line_items: items.map((item: any) => ({
-						product_id: item.productId,
-						quantity: item.quantity,
-					})),
+				const newLineItems = items.map((item: any) => ({
+					product_id: item.productId,
+					quantity: item.quantity,
+				}));
+
+				await wooCommerceApi.patch(`orders/${orderId}`, {
+					line_items: [...existingOrderItems, ...newLineItems],
 				});
 
 				// update stripe
@@ -87,10 +93,10 @@ router.post('/create-payment-intent', async (req, res) => {
 		// Create WooCommerce Order
 
 		// Update Payment Intent metadata with the correct WooCommerce Order ID
-
+		console.log('order', encryptOrderId(order.id));
 		res.send({
 			clientSecret: paymentIntent.client_secret,
-			orderId: order.id,
+			orderId: encryptOrderId(order.id),
 		});
 	} catch (error) {
 		console.error(error);
@@ -105,7 +111,7 @@ router.post('/update-order-details', async (req, res) => {
 		//@ts-ignore
 		const order: Order = {
 			// @ts-ignore
-			id: orderData.orderId,
+			id: decryptOrderId(orderData.orderId),
 			billing: {
 				first_name: orderData.billingAddress.firstName,
 				last_name: orderData.billingAddress.lastName,
