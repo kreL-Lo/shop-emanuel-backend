@@ -3,19 +3,52 @@ import { Router } from 'express';
 import wooCommerceApi from '../apiSetup/wooCommerceApi';
 
 const router = Router();
+const MENU_ITEMS = {
+	BMS: 'bms',
+	SUPORTI_CARCASE: 'suporti_carcase',
+	PLAT_BANDA: 'plat-banda',
+	ECHIPAMENTE: 'echipamente',
+	CELULE: 'celule',
+	BATERII_MOPED: 'baterii-moped',
+	SUDURA_PUNCTE: 'sudura-puncte',
+	INCARCATOARE: 'incarcatoare',
+	CABLU_CONECTORI: 'cablu-conectori',
+	PROTECTIE_AMBALARE: 'protectie-ambalare',
+	TESTERE_BATERII: 'tester-baterii',
+};
 
 // Fetch Products Route
 router.get('/search/:name', async (req, res) => {
 	const { page = 1, per_page = 30 } = req.query; // Default: page 1, 10 products per page
 	const { name } = req.params;
+	// get the rest of url ?category= value
+	const { category } = req.query;
+
+	let validCategory = null;
+	if (category) {
+		//find in menu types
+		if (MENU_ITEMS[category]) {
+			validCategory = { slug: MENU_ITEMS[category] };
+		}
+	}
+
 	try {
-		const response = await wooCommerceApi.get(`/products`, {
-			params: {
-				search: name,
-				page,
-				per_page,
-			},
-		});
+		const params = {
+			search: name,
+			page,
+			per_page,
+		};
+
+		if (name === 'all') {
+			params.search = '';
+		}
+
+		// Add category to the parameters if valid
+		if (validCategory) {
+			params.category = validCategory.slug;
+		}
+
+		const response = await wooCommerceApi.get(`/products`, { params });
 
 		// Send WooCommerce response to the client
 		res.status(200).json({
@@ -52,7 +85,6 @@ router.get('/noutati', async (req, res) => {
 });
 router.get('/product/:id', async (req, res) => {
 	const { id } = req.params;
-
 	try {
 		const response = await wooCommerceApi.get(`/products/${id}`);
 		res.json(response.data);
@@ -62,4 +94,52 @@ router.get('/product/:id', async (req, res) => {
 	}
 });
 
+// get all orders and products
+async function cleanOrders() {
+	//get all orders
+	try {
+		console.log('here beging clean orders');
+		const response = await wooCommerceApi.get(`/orders`, {
+			params: {
+				per_page: 50,
+			},
+		});
+		const orders = response.data;
+
+		await orders.forEach(async (order) => {
+			const id = order.id;
+			console.log('cleaning order', id);
+			const response = await wooCommerceApi.delete(`/orders/${id}`, {
+				force: true,
+			});
+		});
+		console.log('here end clean orders');
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+async function cleanProducts() {
+	try {
+		console.log('here beging clean products');
+		const response = await wooCommerceApi.get(`/products`, {
+			params: {
+				per_page: 100,
+			},
+		});
+		const products = response.data;
+
+		await products.forEach(async (product) => {
+			const id = product.id;
+			console.log('cleaning product', id);
+			const response = await wooCommerceApi.delete(`/products/${id}`, {
+				force: true,
+			});
+		});
+
+		console.log('here end clean products');
+	} catch (e) {
+		console.log(e);
+	}
+}
 export default router;
