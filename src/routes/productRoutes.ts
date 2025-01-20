@@ -19,7 +19,7 @@ const MENU_ITEMS = {
 
 // Fetch Products Route
 router.get('/search/:name', async (req, res) => {
-	const { page = 1, per_page = 30 } = req.query; // Default: page 1, 10 products per page
+	const { page = 1, per_page = 20 } = req.query; // Default: page 1, 10 products per page
 	const { name } = req.params;
 	// get the rest of url ?category= value
 	const { category } = req.query;
@@ -31,7 +31,6 @@ router.get('/search/:name', async (req, res) => {
 			validCategory = { slug: MENU_ITEMS[category] };
 		}
 	}
-
 	try {
 		const params = {
 			search: name,
@@ -48,8 +47,12 @@ router.get('/search/:name', async (req, res) => {
 			params.category = validCategory.slug;
 		}
 
-		const response = await wooCommerceApi.get(`/products`, { params });
-
+		const response = await wooCommerceApi.get(
+			`/products?page=${page}&per_page=${per_page}`,
+			{ params }
+		);
+		const url = `/products?page=${page}&per_page=${per_page}`;
+		console.lo;
 		// Send WooCommerce response to the client
 		res.status(200).json({
 			page: parseInt(page),
