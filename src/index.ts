@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 	res.set('Surrogate-Control', 'no-store');
 
 	// Set CORS headers
-	res.header('Access-Control-Allow-Origin', allowedOrigins);
+	res.header('Access-Control-Allow-Origin', 'https://atelieruldebaterii.ro');
 	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 	res.header(
 		'Access-Control-Allow-Headers',
@@ -44,7 +44,7 @@ app.use((req, res, next) => {
 // Middleware to parse JSON
 app.use(express.json());
 
-app.use('/', allRoutes);
+app.use('/api', allRoutes);
 
 app.listen(PORT, () => {
 	console.log(`Server running on http://localhost:${PORT}`);

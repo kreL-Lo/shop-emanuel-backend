@@ -24,9 +24,9 @@ const oauth1 = oauth({
 
 // Request details
 
-const BASE_URL = 'http://localhost/wordpress/wp-json/wc/v3';
+const BASE_URL = 'http://another.zapto.org/wordpress/wp-json/wc/v3';
 
-const url = 'http://localhost/wordpress/wp-json/wc/v3/products';
+const url = 'http://another.zapto.org/wordpress/wp-json/wc/v3/products';
 // Prepare OAuth headers
 // const request_data = {
 // 	url: url,
