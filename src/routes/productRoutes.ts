@@ -82,7 +82,7 @@ router.get('/noutati', async (req, res) => {
 		});
 		res.json(response.data);
 	} catch (error) {
-		console.error('Error fetching products:', error.message);
+		console.error('Error fetching products:', error);
 		res.status(500).json({ error: 'Failed to fetch products' });
 	}
 });
@@ -116,7 +116,6 @@ async function cleanOrders() {
 				force: true,
 			});
 		});
-		console.log('here end clean orders');
 	} catch (e) {
 		console.log(e);
 	}
@@ -134,7 +133,6 @@ async function cleanProducts() {
 
 		await products.forEach(async (product) => {
 			const id = product.id;
-			console.log('cleaning product', id);
 			const response = await wooCommerceApi.delete(`/products/${id}`, {
 				force: true,
 			});

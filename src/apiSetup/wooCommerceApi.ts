@@ -26,20 +26,7 @@ const oauth1 = oauth({
 
 const BASE_URL = 'http://another.zapto.org/wordpress/wp-json/wc/v3';
 
-const url = 'http://another.zapto.org/wordpress/wp-json/wc/v3/products';
-// Prepare OAuth headers
-// const request_data = {
-// 	url: url,
-// 	method: 'GET',
-// };
-
-// const headers = oauth1.toHeader(oauth1.authorize(request_data));
-
-// //do a test on axios with header
-// axios.get(url, { headers: headers }).then((response) => {
-// 	console.log(response.data);
-// });
-
+//NOT TOUCHING CUZ IT FUCKING WORKS
 // Axios instance setup
 const wooCommerceApi = axios.create({
 	baseURL: `${process.env.WOO_BASE_URL}/wp-json/wc/v3`,
