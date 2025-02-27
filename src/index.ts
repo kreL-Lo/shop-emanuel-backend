@@ -3,10 +3,8 @@ import dotenv from 'dotenv';
 
 import allRoutes from './routes/index';
 import webHookRouter from './routes/payment/webhook';
-import Products from './orm/products';
 //@ts-check
 dotenv.config();
-const allowedOrigins = '*';
 const app = express();
 const PORT = process.env.PORT || 3000;
 // CORS configuration
@@ -47,12 +45,6 @@ app.use(express.json());
 
 app.use('/api', allRoutes);
 
-app.get('/api/test', (req, res) => {
-	const products = Products.query().then((products) => {
-		console.log(products);
-	});
-	res.send('Hello World!');
-});
 app.listen(PORT, () => {
 	console.log(`Server running on http://localhost:${PORT}`);
 });
