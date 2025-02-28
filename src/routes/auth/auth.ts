@@ -75,9 +75,9 @@ router.get('/validate', async (req, res) => {
 //write a jwt validation middleware
 //@ts-ignore
 export const validateToken = async (req, res, next) => {
-	const token = req.headers.authorization.split(' ')[1];
 	// decode token
 	try {
+		const token = req.headers.authorization.split(' ')[1];
 		const response = await axios.post(
 			WP_VALIDATE_URL,
 			{},
@@ -90,6 +90,10 @@ export const validateToken = async (req, res, next) => {
 
 		if (response.status === 200) {
 			// Decode the token to get the user ID
+			const d = jwt.decode(token, { complete: true }); // Decodes without verification
+			const id = d.payload.data.user.id;
+			// put the id in the request
+			req['userId'] = id;
 			next();
 		} else {
 			return res.status(response.status).json({ message: 'Invalid token' });

@@ -6,6 +6,8 @@ import cartRoutes from './cart/cart';
 import paymentRoutes from './payment/payment';
 import orderRoutes from './orders/orders';
 import authRoutes from './auth/auth';
+import addressRoute from './address/address';
+import userRoute from './user/user';
 const router = Router();
 
 router.use('/categories', catgories);
@@ -16,4 +18,6 @@ router.use('/cart', cartRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/orders', orderRoutes);
 router.use('/auth', authRoutes);
+router.use('/address', addressRoute);
+router.use('/user', userRoute);
 export default router;
