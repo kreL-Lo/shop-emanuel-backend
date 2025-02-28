@@ -4,7 +4,6 @@ const express = require('express');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const JWT_SECRET = process.env.JWT_SECRET; // Ensure you have this in your .env file
 
 const router = express.Router();
 require('dotenv').config();
@@ -104,19 +103,27 @@ export const validateToken = async (req, res, next) => {
 
 //@ts-ignore
 router.post('/register', async (req, res) => {
-	const { username, email, password, firstName, lastName } = req.body;
+	const { email, password, firstName, lastName } = req.body;
 	try {
-		const response = await axios.post(
-			`${WOO_BASE_URL}/wp-json/wp/v2/users/register`,
-			{
-				username,
-				email,
-				password,
-			}
-		);
+		//create a woo commerce customer
+		const response = await wooCommerceApi.post('/customers', {
+			email,
+			password,
+			first_name: firstName,
+			last_name: lastName,
+		});
+		// create token
+		const responseToken = await axios.post(WP_URL, {
+			username: email,
+			password,
+		});
 
-		return res.json(response.data);
+		return res.json({
+			token: responseToken.data.token,
+			user: response.data,
+		});
 	} catch (error) {
+		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid credentials' });
 	}
 });
