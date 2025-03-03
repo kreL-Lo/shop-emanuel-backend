@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { Router } from 'express';
 import wooCommerceApi from '../apiSetup/wooCommerceApi';
+import findProductVariation from '../functions/products/findProductVariation';
+import findProductsVariations from '../functions/products/findProductVariation';
 
 const router = Router();
 const MENU_ITEMS = {
@@ -80,17 +82,32 @@ router.get('/noutati', async (req, res) => {
 				order: 'desc', // Descending order (most recent first)
 			},
 		});
-		res.json(response.data);
+		const products = response.data;
+		await findProductsVariations(products);
+
+		//
+
+		res.json(products);
 	} catch (error) {
 		console.error('Error fetching products:', error);
 		res.status(500).json({ error: 'Failed to fetch products' });
 	}
 });
-router.get('/product/:id', async (req, res) => {
-	const { id } = req.params;
+router.get('/product/:slug', async (req, res) => {
+	const { slug } = req.params;
 	try {
-		const response = await wooCommerceApi.get(`/products/${id}`);
-		res.json(response.data);
+		// get slug of product
+		const response = await wooCommerceApi.get(`/products?slug=${slug}`);
+		const product = response.data[0];
+
+		if (product.variations.length > 0) {
+			const variationsResponse = await wooCommerceApi.get(
+				`/products/${product.id}/variations`
+			);
+			product.variations = variationsResponse.data;
+		}
+		// retunr response
+		res.json(product);
 	} catch (error) {
 		console.error('Error fetching product:', error.message);
 		res.status(500).json({ error: 'Failed to fetch product' });
@@ -101,7 +118,6 @@ router.get('/product/:id', async (req, res) => {
 async function cleanOrders() {
 	//get all orders
 	try {
-		console.log('here beging clean orders');
 		const response = await wooCommerceApi.get(`/orders`, {
 			params: {
 				per_page: 50,
