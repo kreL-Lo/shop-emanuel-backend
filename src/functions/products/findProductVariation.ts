@@ -11,6 +11,15 @@ const findProductVariation = async (product: Product) => {
 		//@ts-ignore
 		product.displayVariation = response.data;
 	}
+	//get review
+	const rating = await wooCommerceApi.get(`/products/reviews`, {
+		params: {
+			product: product.id,
+		},
+	});
+	if (rating.data.length === 1) {
+		product.average_rating = rating.data[0].rating;
+	}
 };
 
 const findProductsVariations = async (products: Product[]) => {

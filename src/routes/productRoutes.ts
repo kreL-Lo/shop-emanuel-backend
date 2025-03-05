@@ -84,9 +84,6 @@ router.get('/noutati', async (req, res) => {
 		});
 		const products = response.data;
 		await findProductsVariations(products);
-
-		//
-
 		res.json(products);
 	} catch (error) {
 		console.error('Error fetching products:', error);
@@ -100,11 +97,20 @@ router.get('/product/:slug', async (req, res) => {
 		const response = await wooCommerceApi.get(`/products?slug=${slug}`);
 		const product = response.data[0];
 
-		if (product.variations.length > 0) {
+		if (product?.variations.length > 0) {
 			const variationsResponse = await wooCommerceApi.get(
 				`/products/${product.id}/variations`
 			);
 			product.variations = variationsResponse.data;
+		}
+
+		const rating = await wooCommerceApi.get(`/products/reviews`, {
+			params: {
+				product: product.id,
+			},
+		});
+		if (rating.data.length === 1) {
+			product.average_rating = rating.data[0].rating;
 		}
 		// retunr response
 		res.json(product);

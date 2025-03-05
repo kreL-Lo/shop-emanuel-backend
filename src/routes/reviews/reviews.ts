@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
+import { Product } from '../../types/product';
 
 const router = Router();
 
@@ -22,7 +23,6 @@ router.get('/:productId', async (req, res) => {
 			orderby = 'date',
 			rating,
 		} = req.query;
-		console.log('here', req.query);
 		const params: any = {
 			product: productId,
 			page,
@@ -65,23 +65,29 @@ router.get('/:productId', async (req, res) => {
 		}
 		res.json(sortedReviews);
 	} catch (error: any) {
-		console.log('here', error);
 		res.status(500).json({ error: error.message });
 	}
 });
 
+// @ts-ignore
 router.get('/starsCount/:productId', async (req, res) => {
 	// for a review get me the stars count of [1,2,3,4,5]
 	try {
 		const { productId } = req.params;
+		//get product
+
+		const data = await wooCommerceApi.get(`/products/${productId}`);
+		const product: Product = data.data;
+		if (!data.data) {
+			return res.status(404).json({ message: 'Product not found' });
+		}
+
 		const response = await wooCommerceApi.get('/products/reviews', {
-			params: { product: productId },
+			params: { product: productId, per_page: 100 },
 		});
-		let sumRating = 0;
 		const starsCount = response.data.reduce(
 			(acc: any, review: any) => {
 				const rating = review.rating;
-				sumRating += rating;
 				if (rating <= 1) {
 					acc[1] += 1;
 				} else if (rating <= 2) {
@@ -103,10 +109,15 @@ router.get('/starsCount/:productId', async (req, res) => {
 				5: 0,
 			}
 		);
+		const numReview =
+			product.rating_count + (response.data.length === 0 ? 0 : 1);
 		const object = {
 			count: starsCount,
-			nrOfReviews: response.data.length,
-			totalRating: sumRating / response.data.length,
+			nrOfReviews: numReview,
+			totalRating:
+				response.data.length === 1
+					? parseFloat(response.data[0].rating)
+					: parseFloat(product.average_rating),
 		};
 		res.json(object);
 	} catch (e: any) {
@@ -128,6 +139,7 @@ router.post('/', async (req, res) => {
 			},
 		});
 		if (reviews.data.length < 3) {
+			console.log('here', rating);
 			const response = await wooCommerceApi.post('/products/reviews', {
 				product_id,
 				review,
@@ -143,12 +155,12 @@ router.post('/', async (req, res) => {
 		}
 		// if(reviews.data.length <=){
 	} catch (error: any) {
-		console.log('here', error);
 		if (error.status === '409') {
 			return res
 				.status(409)
 				.json({ message: 'You have reached the maximum number of reviews' });
 		}
+		console.log('here', error);
 		res.status(500).json({ error: error.message });
 	}
 });
