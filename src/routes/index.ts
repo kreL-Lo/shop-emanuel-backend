@@ -9,7 +9,7 @@ import authRoutes from './auth/auth';
 import addressRoute from './address/address';
 import userRoute from './user/user';
 import reviews from './reviews/reviews';
-
+import dBattery from './dBattery/dBattery';
 const router = Router();
 
 router.use('/categories', catgories);
@@ -23,4 +23,5 @@ router.use('/auth', authRoutes);
 router.use('/address', addressRoute);
 router.use('/user', userRoute);
 router.use('/reviews', reviews);
+router.use('/designBattery', dBattery);
 export default router;

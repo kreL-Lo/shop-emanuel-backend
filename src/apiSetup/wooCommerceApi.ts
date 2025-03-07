@@ -24,8 +24,6 @@ const oauth1 = oauth({
 
 // Request details
 
-const BASE_URL = 'http://another.zapto.org/wordpress/wp-json/wc/v3';
-
 //NOT TOUCHING CUZ IT FUCKING WORKS
 // Axios instance setup
 const wooCommerceApi = axios.create({

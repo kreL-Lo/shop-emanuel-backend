@@ -49,6 +49,9 @@ router.post('/items', async (req, res) => {
 			products.data.map(async (product) => {
 				//fetch variations
 				// @ts-ignore
+				product.cartVariations = [];
+
+				// @ts-ignore
 				const variations: { data: [ProductVariation] } = await wooCommerceApi
 					.get(`/products/${product.id}/variations`, {
 						params: {
