@@ -1,8 +1,9 @@
 // @ts-nocheck
 import { Router } from 'express';
-import wooCommerceApi from '../apiSetup/wooCommerceApi';
-import findProductVariation from '../functions/products/findProductVariation';
-import findProductsVariations from '../functions/products/findProductVariation';
+import wooCommerceApi from '../../apiSetup/wooCommerceApi';
+import findProductVariation from '../../functions/products/findProductVariation';
+import findProductsVariations from '../../functions/products/findProductVariation';
+import { paramsProduct } from './prodUtils';
 
 const router = Router();
 const MENU_ITEMS = {
@@ -38,6 +39,7 @@ router.get('/search/:name', async (req, res) => {
 			search: name,
 			page,
 			per_page,
+			...paramsProduct,
 		};
 
 		if (name === 'all') {
@@ -53,8 +55,6 @@ router.get('/search/:name', async (req, res) => {
 			`/products?page=${page}&per_page=${per_page}`,
 			{ params }
 		);
-		const url = `/products?page=${page}&per_page=${per_page}`;
-		console.lo;
 		// Send WooCommerce response to the client
 		res.status(200).json({
 			page: parseInt(page),
@@ -77,9 +77,10 @@ router.get('/noutati', async (req, res) => {
 			// limit to 10 products
 			// first 10 products
 			params: {
-				per_page: 10, // Limit to 10 products
+				per_page: 1, // Limit to 10 products
 				orderby: 'date', // Order by creation date
 				order: 'desc', // Descending order (most recent first)
+				...paramsProduct,
 			},
 		});
 		const products = response.data;
@@ -94,7 +95,9 @@ router.get('/product/:slug', async (req, res) => {
 	const { slug } = req.params;
 	try {
 		// get slug of product
-		const response = await wooCommerceApi.get(`/products?slug=${slug}`);
+		const response = await wooCommerceApi.get(`/products?slug=${slug}`, {
+			...paramsProduct,
+		});
 		const product = response.data[0];
 
 		if (product?.variations.length > 0) {
@@ -120,49 +123,4 @@ router.get('/product/:slug', async (req, res) => {
 	}
 });
 
-// get all orders and products
-async function cleanOrders() {
-	//get all orders
-	try {
-		const response = await wooCommerceApi.get(`/orders`, {
-			params: {
-				per_page: 50,
-			},
-		});
-		const orders = response.data;
-
-		await orders.forEach(async (order) => {
-			const id = order.id;
-			console.log('cleaning order', id);
-			const response = await wooCommerceApi.delete(`/orders/${id}`, {
-				force: true,
-			});
-		});
-	} catch (e) {
-		console.log(e);
-	}
-}
-
-async function cleanProducts() {
-	try {
-		console.log('here beging clean products');
-		const response = await wooCommerceApi.get(`/products`, {
-			params: {
-				per_page: 100,
-			},
-		});
-		const products = response.data;
-
-		await products.forEach(async (product) => {
-			const id = product.id;
-			const response = await wooCommerceApi.delete(`/products/${id}`, {
-				force: true,
-			});
-		});
-
-		console.log('here end clean products');
-	} catch (e) {
-		console.log(e);
-	}
-}
 export default router;

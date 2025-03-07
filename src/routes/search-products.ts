@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Router } from 'express';
 import wooCommerceApi from '../apiSetup/wooCommerceApi';
+import { paramsProduct } from './prodRoutes/prodUtils';
 
 const router = Router();
 router.get('/', async (req, res) => {
@@ -16,6 +17,7 @@ router.get('/', async (req, res) => {
 			params: {
 				search: q, // WooCommerce supports searching with the 'search' query param
 				per_page: 10, // Limit the number of results per page (optional)
+				...paramsProduct,
 			},
 		});
 

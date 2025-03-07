@@ -72,8 +72,57 @@ router.post('/products', async (req, res) => {
 		res.status(200).json(payload);
 	} catch (e: any) {
 		//
-		console.log('here', e);
 		res.status(500).json({ error: e?.message });
+	}
+});
+
+router.post('/placeOrder', async (req, res) => {
+	try {
+		const data: InfoGraph = req.body;
+		const payload = {
+			products: [],
+			totalCost: 0,
+			costProduse: 0,
+			costManopera: 0,
+		};
+		payload['products'] = await buildProducts(data);
+		// @ts-ignorec
+
+		const cProduse = costProduse(payload?.products);
+		const cManopera = costManopera(cProduse);
+		payload['totalCost'] = cProduse + cManopera;
+		payload['costProduse'] = cProduse;
+		payload['costManopera'] = cManopera;
+
+		// use woocommerce api to create a groupped product
+
+		// @ts-ignore
+		const ids = payload.products.map((product) => product.id);
+		// @ts-ignore
+
+		const productData: Product = {
+			name: 'Custom Grouped Product',
+			type: 'grouped',
+			catalog_visibility: 'hidden',
+			// @ts-ignore
+			status: 'private',
+
+			price: payload.totalCost.toString(),
+			regular_price: payload.totalCost.toString(),
+			// @ts-ignore
+			related_ids: ids,
+			grouped_products: ids,
+		};
+		//create
+		const product = await wooCommerceApi.post('/products', productData);
+
+		res.status(200).json(product.data);
+
+		//
+	} catch (e) {
+		console.log('here', e);
+		// @ts-ignore
+		res.status(500).json({ error: e.message });
 	}
 });
 

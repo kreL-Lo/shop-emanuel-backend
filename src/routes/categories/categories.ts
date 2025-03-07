@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import findProductsVariations from '../../functions/products/findProductVariation';
+import { paramsProduct } from '../prodRoutes/prodUtils';
 
 const router = Router();
 // @ts-ignore
@@ -21,6 +22,7 @@ router.get('/', async (req, res) => {
 					params: {
 						category: category.id,
 						per_page: 5,
+						...paramsProduct,
 					},
 				});
 

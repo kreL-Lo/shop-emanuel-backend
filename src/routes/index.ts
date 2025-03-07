@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import catgories from './categories/categories';
-import productRoutes from './productRoutes';
+import productRoutes from './prodRoutes/productRoutes';
 import searchProducts from './search-products';
 import cartRoutes from './cart/cart';
 import paymentRoutes from './payment/payment';

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Product } from '../../types/product';
+import { paramsProduct } from '../prodRoutes/prodUtils';
 
 const router = Router();
 
@@ -76,7 +77,11 @@ router.get('/starsCount/:productId', async (req, res) => {
 		const { productId } = req.params;
 		//get product
 
-		const data = await wooCommerceApi.get(`/products/${productId}`);
+		const data = await wooCommerceApi.get(`/products/${productId}`, {
+			params: {
+				...paramsProduct,
+			},
+		});
 		const product: Product = data.data;
 		if (!data.data) {
 			return res.status(404).json({ message: 'Product not found' });
