@@ -88,6 +88,7 @@ router.post('/placeOrder', async (req, res) => {
 		payload['products'] = await buildProducts(data);
 		// @ts-ignorec
 
+		const dataGraph = buildInfoGraph(data, true);
 		const cProduse = costProduse(payload?.products);
 		const cManopera = costManopera(cProduse);
 		payload['totalCost'] = cProduse + cManopera;
@@ -99,17 +100,29 @@ router.post('/placeOrder', async (req, res) => {
 		// @ts-ignore
 		const ids = payload.products.map((product) => product.id);
 		// @ts-ignore
-
+		const variation = [dataGraph.latime, dataGraph.lungime, dataGraph.inaltime];
 		const productData: Product = {
-			name: 'Custom Grouped Product',
-			type: 'grouped',
+			name: `Baterie Customizata ${variation.join(' x ')}`,
+			type: 'simple',
 			catalog_visibility: 'hidden',
 			// @ts-ignore
 			status: 'private',
-
 			price: payload.totalCost.toString(),
 			regular_price: payload.totalCost.toString(),
+			short_description: `${JSON.stringify(dataGraph)}`,
 			// @ts-ignore
+			images: [
+				{
+					src: 'http://localhost:8013/wordpress/wp-content/uploads/2025/03/db_default.png',
+					alt: 'Baterie Customizata',
+					id: 0,
+					date_created: '',
+					date_created_gmt: '',
+					date_modified: '',
+					date_modified_gmt: '',
+					name: '',
+				},
+			],
 			related_ids: ids,
 			grouped_products: ids,
 		};

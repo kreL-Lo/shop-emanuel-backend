@@ -77,7 +77,7 @@ router.get('/noutati', async (req, res) => {
 			// limit to 10 products
 			// first 10 products
 			params: {
-				per_page: 1, // Limit to 10 products
+				per_page: 10, // Limit to 10 products
 				orderby: 'date', // Order by creation date
 				order: 'desc', // Descending order (most recent first)
 				...paramsProduct,

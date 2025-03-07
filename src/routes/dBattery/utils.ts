@@ -293,9 +293,9 @@ const buildBatteryDimensions = (batteryPackMatrix, batteryType) => {
 	const colLenToCm = batteryRawUnitsToCm(colLen, batteryType);
 	const heightLenToCm = batteryRawHeightUnitsToCm(heightLen, batteryType);
 	return {
-		latime: `${colLenToCm.toFixed(3)} cm`,
-		lungime: `${rowLenToCm.toFixed(3)} cm`,
-		inaltime: `${heightLenToCm.toFixed(3)} cm`,
+		latime: `${colLenToCm.toFixed(2)} cm`,
+		lungime: `${rowLenToCm.toFixed(2)} cm`,
+		inaltime: `${heightLenToCm.toFixed(2)} cm`,
 	};
 };
 
@@ -359,6 +359,7 @@ export const buildInfoGraph = (data: InfoGraph, raw = false) => {
 			lungime: lungime,
 			latime: latime,
 			inaltime: inaltime,
+			activeBattery: activeBattery,
 		};
 	else {
 		return {
@@ -374,6 +375,7 @@ export const buildInfoGraph = (data: InfoGraph, raw = false) => {
 			lungime: lungime,
 			latime: latime,
 			inaltime: inaltime,
+			activeBattery: activeBattery,
 		};
 	}
 };
