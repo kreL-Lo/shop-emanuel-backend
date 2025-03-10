@@ -1,15 +1,18 @@
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
+import { ProductItem } from './computeProductItemsTotalPrice';
+import findProductsVariations from './findProductVariation';
 
-export const getAllProducts = async (productsIds: string[]) => {
+export const getAllProducts = async (productItems: ProductItem[]) => {
 	try {
-		const products = await wooCommerceApi.get('products', {
+		const productIds = productItems.map((item) => item.productId);
+		const products = await wooCommerceApi.get(`/products`, {
 			params: {
-				include: productsIds.join(','),
+				include: productIds.join(','),
 			},
 		});
+		await findProductsVariations(products.data);
 		return products.data;
 	} catch (error) {
-		console.error('Error getting products:', error);
 		throw new Error('Failed to get products');
 	}
 };

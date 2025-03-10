@@ -110,19 +110,7 @@ router.post('/placeOrder', async (req, res) => {
 			price: payload.totalCost.toString(),
 			regular_price: payload.totalCost.toString(),
 			short_description: `${JSON.stringify(dataGraph)}`,
-			// @ts-ignore
-			images: [
-				{
-					src: 'http://localhost:8013/wordpress/wp-content/uploads/2025/03/db_default.png',
-					alt: 'Baterie Customizata',
-					id: 0,
-					date_created: '',
-					date_created_gmt: '',
-					date_modified: '',
-					date_modified_gmt: '',
-					name: '',
-				},
-			],
+
 			related_ids: ids,
 			grouped_products: ids,
 		};

@@ -1,8 +1,11 @@
+import { all } from 'axios';
+import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { getAllProducts } from './products';
 
 export type ProductItem = {
 	productId: string;
 	quantity: number;
+	variationId: string;
 };
 
 export const computeProductsTotalPrice = async (
@@ -12,18 +15,23 @@ export const computeProductsTotalPrice = async (
 		if (!productItems) {
 			return 0;
 		}
-		const productIds = productItems.map((product) => product.productId);
 
-		const allProducts = await getAllProducts(productIds);
+		const allProducts = await getAllProducts(productItems);
 
-		const total = productItems.reduce((acc, product) => {
+		let total = 0;
+
+		//for each product get variation if exists
+		productItems.forEach((item) => {
 			// @ts-ignore
-			const productData = allProducts.find((p) => p.id === product.productId);
-			if (!productData) {
-				return acc;
+			const product = allProducts.find((p) => p.id === item.productId);
+			let price = 0;
+			if (item.variationId) {
+				price = product.displayVariation.price;
+			} else {
+				price = product.price;
 			}
-			return acc + productData.price * product.quantity;
-		}, 0);
+			total += price * item.quantity;
+		});
 
 		return total * 100;
 	} catch (e) {

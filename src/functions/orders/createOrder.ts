@@ -23,17 +23,25 @@ export const createWooCommerceOrder = async ({
 				country: '',
 			},
 			// @ts-ignore
-			line_items: items.map((item) => ({
-				product_id: item.productId,
-				quantity: item.quantity,
-			})),
+			line_items: items.map((item) => {
+				if (item.variationId) {
+					return {
+						product_id: item.productId,
+						quantity: item.quantity,
+						variation_id: item.variationId,
+					};
+				}
+				return {
+					product_id: item.productId,
+					quantity: item.quantity,
+				};
+			}),
 		};
 
-		const response = await wooCommerceApi.post('orders', orderData);
+		const response = await wooCommerceApi.post('/orders', orderData);
 		// @ts-ignore
 		return response.data; // Return the WooCommerce order ID
 	} catch (error) {
-		console.error('Error creating WooCommerce order:', error);
 		throw new Error('Failed to create WooCommerce order');
 	}
 };

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Order } from '../../types/order';
 import { Product } from '../../types/product';
+import findProductsVariations from '../../functions/products/findProductVariation';
 dotenv.config();
 
 const key = Buffer.from(process.env.ORDER_ENCRIPTION_KEY || '', 'hex');
@@ -56,7 +57,7 @@ router.get('/order/:orderKey', async (req, res) => {
 		const orderId = decryptOrderId(orderKey);
 
 		// get order
-		const order = await wooCommerceApi.get(`orders/${orderId}`);
+		const order = await wooCommerceApi.get(`/orders/${orderId}`);
 		const {
 			data,
 		}: {
@@ -64,11 +65,13 @@ router.get('/order/:orderKey', async (req, res) => {
 		} = order;
 		let products: ProductWithQuantity[] = [];
 		if (data.line_items) {
-			products = await wooCommerceApi.get('products', {
+			products = await wooCommerceApi.get('/products', {
 				params: {
 					include: data.line_items.map((item) => item.product_id).join(','),
 				},
 			});
+			// @ts-ignore
+			await findProductsVariations(products.data);
 			//@ts-ignore
 			products = products.data.map((product: Product) => {
 				//@ts-ignore
@@ -77,7 +80,7 @@ router.get('/order/:orderKey', async (req, res) => {
 				)?.quantity;
 				return {
 					...product,
-					quantity: quantity || 0,
+					dbQuantity: quantity || 0,
 				};
 			});
 		}

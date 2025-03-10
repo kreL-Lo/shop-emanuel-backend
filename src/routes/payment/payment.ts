@@ -22,11 +22,9 @@ router.post('/check-client-secret', async (req, res) => {
 		const clientSecret = req?.body?.clientSecret;
 		const orderId = decryptOrderId(req?.body?.orderId);
 		const items = req?.body?.items;
-
 		const paymentIntendId = clientSecret.split('_secret')[0];
 		const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntendId);
-
-		const order = await wooCommerceApi.get(`orders/${orderId}`);
+		const order = await wooCommerceApi.get(`/orders/${orderId}`);
 		// check metadata  of paymentIntend
 		if (paymentIntent.metadata.order_id !== orderId && order) {
 			res.send({ status: 'failed' });
@@ -41,16 +39,19 @@ router.post('/check-client-secret', async (req, res) => {
 				// update order
 				const existingOrderItems = order.data.line_items.map((item: any) => ({
 					id: item.id,
-					quantity: 0,
+					quantity: 0, // Placeholder, will be removed before sending
 				}));
 
 				const newLineItems = items.map((item: any) => ({
 					product_id: item.productId,
 					quantity: item.quantity,
+					...(item.variationId && { variation_id: item.variationId }),
 				}));
 
-				await wooCommerceApi.patch(`orders/${orderId}`, {
-					line_items: [...existingOrderItems, ...newLineItems],
+				// Merge, then filter out zero-quantity items
+
+				await wooCommerceApi.patch(`/orders/${orderId}`, {
+					line_items: [...existingOrderItems, ...newLineItems], // Remove `quantity: 0`
 				});
 
 				// update stripe
@@ -75,7 +76,7 @@ router.post('/create-payment-intent', async (req, res) => {
 		const totalPrice = await computeProductsTotalPrice(productItems);
 		// create order
 
-		// Create Stripe Payment Intent
+		// Create Stripe Payment Inte	nt
 		const order = await createWooCommerceOrder({
 			items: productItems,
 			totalPrice,
@@ -98,7 +99,6 @@ router.post('/create-payment-intent', async (req, res) => {
 			orderId: encryptOrderId(order.id),
 		});
 	} catch (error) {
-		console.error(error);
 		// @ts-ignore
 		res.status(500).send({ error: error.message });
 	}
@@ -137,7 +137,7 @@ router.post('/update-order-details', async (req, res) => {
 		};
 		// Update the WooCommerce order details
 		// @ts-ignore
-		await wooCommerceApi.put(`orders/${order.id}`, {
+		await wooCommerceApi.put(`/orders/${order.id}`, {
 			...order,
 		});
 		res.send({ success: true });
