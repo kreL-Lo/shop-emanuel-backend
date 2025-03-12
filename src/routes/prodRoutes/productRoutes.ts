@@ -123,4 +123,19 @@ router.get('/product/:slug', async (req, res) => {
 	}
 });
 
+router.get('/all', async (req, res) => {
+	try {
+		console.log('here');
+		const response = await wooCommerceApi.get('/products', {
+			...paramsProduct,
+		});
+		const products = response.data;
+		await findProductsVariations(products);
+		res.json(products);
+	} catch (error) {
+		console.error('Error fetching products:', error);
+		res.status(500).json({ error: 'Failed to fetch products' });
+	}
+});
+
 export default router;

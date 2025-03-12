@@ -49,7 +49,6 @@ router.post('/check-client-secret', async (req, res) => {
 				}));
 
 				// Merge, then filter out zero-quantity items
-
 				await wooCommerceApi.patch(`/orders/${orderId}`, {
 					line_items: [...existingOrderItems, ...newLineItems], // Remove `quantity: 0`
 				});

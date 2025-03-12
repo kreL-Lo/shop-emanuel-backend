@@ -144,7 +144,6 @@ router.post('/', async (req, res) => {
 			},
 		});
 		if (reviews.data.length < 3) {
-			console.log('here', rating);
 			const response = await wooCommerceApi.post('/products/reviews', {
 				product_id,
 				review,
