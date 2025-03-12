@@ -7,6 +7,7 @@ import { createWooCommerceOrder } from '../../functions/orders/createOrder';
 import { OrderData } from '../../functions/orders/orderBuilde';
 import { Order } from '../../types/order';
 import { decryptOrderId, encryptOrderId } from '../orders/orders';
+import { isValidToken, validateToken } from '../auth/auth';
 dotenv.config();
 
 const router = Router();
@@ -71,6 +72,7 @@ router.post('/check-client-secret', async (req, res) => {
 });
 router.post('/create-payment-intent', async (req, res) => {
 	try {
+		await isValidToken(req);
 		const productItems = req?.body?.items || [];
 		const totalPrice = await computeProductsTotalPrice(productItems);
 		// create order
@@ -79,6 +81,8 @@ router.post('/create-payment-intent', async (req, res) => {
 		const order = await createWooCommerceOrder({
 			items: productItems,
 			totalPrice,
+			// @ts-ignore
+			user: req['user'] || null,
 		});
 		const paymentIntent = await stripe.paymentIntents.create({
 			amount: totalPrice,
@@ -105,8 +109,10 @@ router.post('/create-payment-intent', async (req, res) => {
 
 router.post('/update-order-details', async (req, res) => {
 	try {
+		await isValidToken(req);
 		const orderData: OrderData = req.body.orderData;
 		//@ts-ignore
+		let customer_id = req['user']?.id || null;
 		const order: Order = {
 			// @ts-ignore
 			id: decryptOrderId(orderData.orderId),
@@ -134,6 +140,9 @@ router.post('/update-order-details', async (req, res) => {
 			status: orderData.deliveryMethod === 'ramburs' ? 'on-hold' : 'pending', //on-hold = ramburs, pending = card
 			payment_method: orderData.deliveryMethod === 'ramburs' ? 'cod' : 'card',
 		};
+		if (customer_id) {
+			order.customer_id = customer_id;
+		}
 		// Update the WooCommerce order details
 		// @ts-ignore
 		await wooCommerceApi.put(`/orders/${order.id}`, {

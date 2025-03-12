@@ -1,14 +1,18 @@
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
+import { Customer } from '../../types/customer';
 import { Order } from '../../types/order';
 import { ProductItem } from '../products/computeProductItemsTotalPrice';
 
 export const createWooCommerceOrder = async ({
 	items,
 	totalPrice,
+	user,
 }: {
 	items: ProductItem[];
 	totalPrice: number;
+	user?: Customer;
 }): Promise<Order> => {
+	console.log('here', user);
 	try {
 		const orderData: Order = {
 			payment_method: 'card', // Payment method (change as needed)
@@ -37,7 +41,9 @@ export const createWooCommerceOrder = async ({
 				};
 			}),
 		};
-
+		if (user) {
+			orderData.customer_id = user.id;
+		}
 		const response = await wooCommerceApi.post('/orders', orderData);
 		// @ts-ignore
 		return response.data; // Return the WooCommerce order ID

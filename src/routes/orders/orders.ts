@@ -39,12 +39,6 @@ export const decryptOrderId = (encryptedOrderId: string) => {
 	return decrypted.toString('utf-8');
 };
 
-const orderId = '1234';
-const encryptedOrderId = encryptOrderId(orderId);
-console.log(encryptedOrderId);
-const decryptedOrderId = decryptOrderId(encryptedOrderId);
-console.log(decryptedOrderId);
-
 type ProductWithQuantity = {
 	product: Product;
 	quantity: number;

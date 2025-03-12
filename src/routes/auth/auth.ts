@@ -74,6 +74,36 @@ router.get('/validate', async (req, res) => {
 
 //write a jwt validation middleware
 //@ts-ignore
+
+export const isValidToken = async (req) => {
+	try {
+		const token = req.headers.authorization.split(' ')[1];
+		const response = await axios.post(
+			WP_VALIDATE_URL,
+			{},
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}
+		);
+
+		if (response.status === 200) {
+			//put user in req
+			const d = jwt.decode(token, { complete: true });
+			const id = d.payload.data.user.id;
+			const data = await wooCommerceApi.get(`/customers/${id}`);
+			req['userId'] = id;
+			req['user'] = data.data;
+			return true;
+		} else {
+			return false;
+		}
+	} catch (error) {
+		return false;
+	}
+};
+// @ts-ignore
 export const validateToken = async (req, res, next) => {
 	// decode token
 	try {
@@ -101,7 +131,6 @@ export const validateToken = async (req, res, next) => {
 			return res.status(response.status).json({ message: 'Invalid token' });
 		}
 	} catch (error) {
-		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid token' });
 	}
 };

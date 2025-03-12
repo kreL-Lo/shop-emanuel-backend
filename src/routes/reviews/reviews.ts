@@ -2,8 +2,9 @@ import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Product } from '../../types/product';
 import { paramsProduct } from '../prodRoutes/prodUtils';
-import { validateToken } from '../auth/auth';
+import { isValidToken, validateToken } from '../auth/auth';
 import { Customer } from '../../types/customer';
+import { Order } from '../../types/order';
 
 const router = Router();
 
@@ -125,11 +126,32 @@ router.get('/starsCount/:productId', async (req, res) => {
 
 // ✅ Create a New Review
 // @ts-ignore
-router.post('/', async (req, res) => {
+router.post('/', validateToken, async (req, res) => {
 	try {
-		// count how many review have been made by reviewer
-		const { product_id, review, reviewer, reviewer_email, rating } = req.body;
+		// check if the user has ordered the product
+		// @ts-ignore
+		const user = req.user as Customer;
 
+		const { product_id } = req.body;
+		const orders = await wooCommerceApi.get('/orders', {
+			params: {
+				customer_id: user.id,
+			},
+		});
+		const order = orders.data.find((order: Order) => {
+			if (!order.line_items) {
+				return false;
+			}
+			return order.line_items.some(
+				(item: any) => item.product_id.toString() === product_id.toString()
+			);
+		});
+		if (!order) {
+			return res.status(403).json({ message: 'You can not review' });
+		}
+
+		// count how many review have been made by reviewer
+		const { review, reviewer, reviewer_email, rating } = req.body;
 		const reviews = await wooCommerceApi.get(`/products/reviews/`, {
 			params: {
 				product: req.body.product_id,
@@ -157,20 +179,6 @@ router.post('/', async (req, res) => {
 				.status(409)
 				.json({ message: 'You have reached the maximum number of reviews' });
 		}
-		console.log('here', error);
-		res.status(500).json({ error: error.message });
-	}
-});
-
-// ✅ Delete a Review
-router.delete('/:reviewId', async (req, res) => {
-	try {
-		const { reviewId } = req.params;
-		const response = await wooCommerceApi.delete(
-			`/products/reviews/${reviewId}?force=true`
-		);
-		res.json({ message: 'Review deleted', data: response.data });
-	} catch (error: any) {
 		res.status(500).json({ error: error.message });
 	}
 });
@@ -186,15 +194,18 @@ router.get('/allow/:productId', validateToken, async (req, res) => {
 		//get user orders and check if the product is in the order
 		const orders = await wooCommerceApi.get('/orders', {
 			params: {
-				customer: user.id,
+				customer_id: user.id,
 			},
 		});
-		const order = orders.data.find((order: any) => {
-			return order.line_items.some((item: any) => {
-				return item.product_id === productId;
-			});
+
+		const order = orders.data.find((order: Order) => {
+			if (!order.line_items) {
+				return false;
+			}
+			return order.line_items.some(
+				(item: any) => item.product_id.toString() === productId
+			);
 		});
-		console.log('order', orders.data);
 		if (!order) {
 			return res.status(403).json({ message: 'You can not review' });
 		}
