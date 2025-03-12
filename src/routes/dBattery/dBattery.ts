@@ -121,7 +121,6 @@ router.post('/placeOrder', async (req, res) => {
 
 		//
 	} catch (e) {
-		console.log('here', e);
 		// @ts-ignore
 		res.status(500).json({ error: e.message });
 	}

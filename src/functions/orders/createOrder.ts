@@ -12,7 +12,6 @@ export const createWooCommerceOrder = async ({
 	totalPrice: number;
 	user?: Customer;
 }): Promise<Order> => {
-	console.log('here', user);
 	try {
 		const orderData: Order = {
 			payment_method: 'card', // Payment method (change as needed)

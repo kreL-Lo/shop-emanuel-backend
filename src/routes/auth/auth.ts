@@ -62,7 +62,6 @@ router.get('/validate', async (req, res) => {
 			const customer = await wooCommerceApi.get(`/customers/${id}`);
 
 			// const data = user.data;
-			// console.log('here', data.roles);
 			return res.json({ valid: true, user: customer.data });
 		} else {
 			return res.status(response.status).json({ message: 'Invalid token' });
@@ -159,7 +158,6 @@ router.post('/register', async (req, res) => {
 			user: response.data,
 		});
 	} catch (error) {
-		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid credentials' });
 	}
 });
