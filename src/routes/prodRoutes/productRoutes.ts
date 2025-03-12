@@ -125,7 +125,6 @@ router.get('/product/:slug', async (req, res) => {
 
 router.get('/all', async (req, res) => {
 	try {
-		console.log('here');
 		const response = await wooCommerceApi.get('/products', {
 			...paramsProduct,
 		});
