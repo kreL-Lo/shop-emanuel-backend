@@ -94,11 +94,14 @@ export const validateToken = async (req, res, next) => {
 			const id = d.payload.data.user.id;
 			// put the id in the request
 			req['userId'] = id;
+			const data = await wooCommerceApi.get(`/customers/${id}`);
+			req['user'] = data.data;
 			next();
 		} else {
 			return res.status(response.status).json({ message: 'Invalid token' });
 		}
 	} catch (error) {
+		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid token' });
 	}
 };

@@ -2,18 +2,11 @@ import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Product } from '../../types/product';
 import { paramsProduct } from '../prodRoutes/prodUtils';
+import { validateToken } from '../auth/auth';
+import { Customer } from '../../types/customer';
 
 const router = Router();
 
-router.get('/', async (req, res) => {
-	try {
-		const response = await wooCommerceApi.get('/products/reviews');
-		res.json(response.data);
-	} catch (error: any) {
-		res.status(500).json({ error: error.message });
-	}
-});
-// ✅ Get Reviews for a Specific Product with Pagination
 router.get('/:productId', async (req, res) => {
 	try {
 		const { productId } = req.params;
@@ -177,6 +170,36 @@ router.delete('/:reviewId', async (req, res) => {
 			`/products/reviews/${reviewId}?force=true`
 		);
 		res.json({ message: 'Review deleted', data: response.data });
+	} catch (error: any) {
+		res.status(500).json({ error: error.message });
+	}
+});
+
+// @ts-ignore
+router.get('/allow/:productId', validateToken, async (req, res) => {
+	try {
+		// allow to review if there is a order with the product
+		// @ts-ignore
+		const user: Customer = req.user;
+		const { productId } = req.params;
+
+		//get user orders and check if the product is in the order
+		const orders = await wooCommerceApi.get('/orders', {
+			params: {
+				customer: user.id,
+			},
+		});
+		const order = orders.data.find((order: any) => {
+			return order.line_items.some((item: any) => {
+				return item.product_id === productId;
+			});
+		});
+		console.log('order', orders.data);
+		if (!order) {
+			return res.status(403).json({ message: 'You can not review' });
+		}
+
+		res.json({ message: 'You can review' });
 	} catch (error: any) {
 		res.status(500).json({ error: error.message });
 	}

@@ -45,7 +45,6 @@ wooCommerceApi.interceptors.request.use(
 				urlWithParams.searchParams.append(key, request.params[key]);
 			});
 		}
-
 		const requestData = {
 			url: urlWithParams.toString(),
 			method: request.method.toUpperCase(),
