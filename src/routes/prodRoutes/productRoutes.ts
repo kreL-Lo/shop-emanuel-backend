@@ -3,7 +3,7 @@ import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import findProductVariation from '../../functions/products/findProductVariation';
 import findProductsVariations from '../../functions/products/findProductVariation';
-import { paramsProduct } from './prodUtils';
+import { getProductSimilarProducts, paramsProduct } from './prodUtils';
 
 const router = Router();
 const MENU_ITEMS = {
@@ -51,11 +51,9 @@ router.get('/search/:name', async (req, res) => {
 			params.category = validCategory.slug;
 		}
 
-		const response = await wooCommerceApi.get(
-			`/products?page=${page}&per_page=${per_page}`,
-			{ params }
-		);
+		const response = await wooCommerceApi.get(`/products`, { params });
 		// Send WooCommerce response to the client
+		await findProductsVariations(response.data);
 		res.status(200).json({
 			page: parseInt(page),
 			per_page: parseInt(per_page),
@@ -64,7 +62,7 @@ router.get('/search/:name', async (req, res) => {
 			products: response.data,
 		});
 	} catch (error) {
-		console.error('Error fetching products:', error.message);
+		console.error('Error fetching products:', error);
 		res.status(error.response?.status || 500).json({
 			error: error.message || 'Internal Server Error',
 		});
@@ -115,10 +113,13 @@ router.get('/product/:slug', async (req, res) => {
 		if (rating.data.length === 1) {
 			product.average_rating = rating.data[0].rating;
 		}
+		await getProductSimilarProducts({ product });
+
+		//get product categories
 		// retunr response
 		res.json(product);
 	} catch (error) {
-		console.error('Error fetching product:', error.message);
+		console.error('Error fetching product:', error);
 		res.status(500).json({ error: 'Failed to fetch product' });
 	}
 });
