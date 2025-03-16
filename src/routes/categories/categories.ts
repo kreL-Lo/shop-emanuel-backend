@@ -10,7 +10,6 @@ const router = Router();
 router.get('/specific-category/:query', async (req, res) => {
 	try {
 		const { query } = req.params;
-
 		//get category father
 		const response = await wooCommerceApi.get('/products/categories', {
 			params: {
@@ -30,10 +29,12 @@ router.get('/specific-category/:query', async (req, res) => {
 			// @ts-ignore
 			parentCategory = parentResponse.data;
 		}
+		const page = req.query.page || 1;
+		const per_page = req.query.per_page || 12;
 
 		const queryProducts = {
-			page: 1,
-			per_page: 30,
+			page: page,
+			per_page: per_page,
 			category: category.id,
 			...paramsProduct,
 		};
@@ -50,11 +51,19 @@ router.get('/specific-category/:query', async (req, res) => {
 				parent: parentCategory.id,
 			},
 		});
+
+		const relatedCategories = [parentCategory, ...subCategories.data];
 		return res.json({
 			category: category,
 			parentCategory: parentCategory,
-			products: products.data,
-			subCategories: subCategories.data,
+			products: {
+				page: page,
+				per_page: per_page,
+				total: parseInt(products.headers['x-wp-total']),
+				total_pages: parseInt(products.headers['x-wp-totalpages']),
+				products: products.data,
+			},
+			subCategories: relatedCategories,
 		});
 	} catch (e) {
 		console.log('Error:', e);
@@ -107,4 +116,38 @@ router.get('/', async (req, res) => {
 	}
 });
 
+// @ts-ignore
+router.get('/all', async (req, res) => {
+	try {
+		const response = await wooCommerceApi.get('/products/categories', {
+			params: {
+				parent: 0,
+			},
+		});
+		// get all parent categories
+
+		// for each category get 5 products
+		const data = await Promise.all(
+			// @ts-ignore
+			response.data.map(async (category) => {
+				//get all subcategories
+				const subCategories = await wooCommerceApi.get('/products/categories', {
+					params: {
+						parent: category.id,
+					},
+				});
+				return {
+					...category,
+					subCategories: subCategories.data,
+				};
+			})
+		);
+
+		return res.json(data);
+	} catch (error) {
+		//
+		console.log('Error:', error);
+		res.status(500).json({ error: 'Failed to fetch categories' });
+	}
+});
 export default router;

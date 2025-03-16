@@ -22,7 +22,7 @@ const MENU_ITEMS = {
 
 // Fetch Products Route
 router.get('/search/:name', async (req, res) => {
-	const { page = 1, per_page = 20 } = req.query; // Default: page 1, 10 products per page
+	const { page = 1, per_page = 12 } = req.query; // Default: page 1, 10 products per page
 	const { name } = req.params;
 	// get the rest of url ?category= value
 	const { category } = req.query;
