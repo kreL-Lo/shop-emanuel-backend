@@ -22,18 +22,20 @@ const MENU_ITEMS = {
 
 // Fetch Products Route
 router.get('/search/:name', async (req, res) => {
-	const { page = 1, per_page = 12 } = req.query; // Default: page 1, 10 products per page
+	const {
+		page = 1,
+		per_page = 12,
+		sort = 'asc',
+		category,
+		['price.min']: priceMin,
+		['price.max']: priceMax,
+		inStock: inStock,
+	} = req.query; // Default: page 1, 10 products per page
 	const { name } = req.params;
 	// get the rest of url ?category= value
-	const { category } = req.query;
 
 	let validCategory = null;
-	if (category) {
-		//find in menu types
-		if (MENU_ITEMS[category]) {
-			validCategory = { slug: MENU_ITEMS[category] };
-		}
-	}
+
 	try {
 		const params = {
 			search: name,
@@ -41,16 +43,30 @@ router.get('/search/:name', async (req, res) => {
 			per_page,
 			...paramsProduct,
 		};
-
-		if (name === 'all') {
-			params.search = '';
+		if (sort === 'asc') {
+			//price ascedning
+			params['orderby'] = 'price';
+			params['order'] = 'asc';
+		} else if (sort === 'desc') {
+			//price descending
+			params['orderby'] = 'price';
+			params['order'] = 'desc';
+		}
+		if (category && category !== 'all') {
+			// get category
+			params['category'] = category;
+		}
+		if (inStock === '1') {
+			params['stock_status'] = 'instock';
+		}
+		if (priceMin) {
+			params['min_price'] = priceMin;
+		}
+		if (priceMax) {
+			params['max_price'] = priceMax;
 		}
 
-		// Add category to the parameters if valid
-		if (validCategory) {
-			params.category = validCategory.slug;
-		}
-
+		console.log('params', params);
 		const response = await wooCommerceApi.get(`/products`, { params });
 		// Send WooCommerce response to the client
 		await findProductsVariations(response.data);

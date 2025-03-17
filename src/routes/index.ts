@@ -9,6 +9,8 @@ import addressRoute from './address/address';
 import userRoute from './user/user';
 import reviews from './reviews/reviews';
 import dBattery from './dBattery/dBattery';
+import filter from './filter/filter';
+
 const router = Router();
 
 router.use('/categories', catgories);
@@ -21,4 +23,6 @@ router.use('/address', addressRoute);
 router.use('/user', userRoute);
 router.use('/reviews', reviews);
 router.use('/designBattery', dBattery);
+router.use('/filter', filter);
+
 export default router;
