@@ -66,7 +66,6 @@ router.get('/search/:name', async (req, res) => {
 			params['max_price'] = priceMax;
 		}
 
-		console.log('params', params);
 		const response = await wooCommerceApi.get(`/products`, { params });
 		// Send WooCommerce response to the client
 		await findProductsVariations(response.data);
