@@ -22,7 +22,9 @@ const findProductVariation = async (product: Product) => {
 		},
 	});
 	if (rating.data.length === 1) {
+		//edge case
 		product.average_rating = rating.data[0].rating;
+		product.rating_count = 1;
 	}
 };
 
