@@ -103,7 +103,7 @@ router.post('/placeOrder', async (req, res) => {
 		const variation = [dataGraph.latime, dataGraph.lungime, dataGraph.inaltime];
 		const productData: Product = {
 			name: `Baterie Customizata ${variation.join(' x ')}`,
-			type: 'simple',
+			type: 'grouped',
 			catalog_visibility: 'hidden',
 			// @ts-ignore
 			status: 'private',
@@ -115,8 +115,8 @@ router.post('/placeOrder', async (req, res) => {
 			grouped_products: ids,
 		};
 		//create
-		const product = await wooCommerceApi.post('/products', productData);
 
+		const product = await wooCommerceApi.post('/products', productData);
 		res.status(200).json(product.data);
 
 		//

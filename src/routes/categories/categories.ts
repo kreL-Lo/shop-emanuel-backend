@@ -18,7 +18,7 @@ router.get('/specific-category/:query', async (req, res) => {
 		});
 		const category: Category = response.data[0];
 		let parentCategory = null;
-		if (category.parent === 0) {
+		if (category?.parent === 0) {
 			// @ts-ignore
 			parentCategory = category;
 		} else {

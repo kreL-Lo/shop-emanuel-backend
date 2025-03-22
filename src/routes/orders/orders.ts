@@ -5,6 +5,7 @@ import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Order } from '../../types/order';
 import { Product } from '../../types/product';
 import findProductsVariations from '../../functions/products/findProductVariation';
+import { validateToken } from '../auth/auth';
 dotenv.config();
 
 const key = Buffer.from(process.env.ORDER_ENCRIPTION_KEY || '', 'hex');
@@ -92,6 +93,40 @@ router.get('/order/:orderKey', async (req, res) => {
 	} catch (e) {
 		console.log(e);
 		// @ts-ignore
+		res.status(500).send({ error: e.message });
+	}
+});
+
+router.get('/', validateToken, async (req, res) => {
+	try {
+		// @ts-ignore
+
+		const user = req?.user;
+		const { page = 1, per_page = 5 } = req.query;
+		const orders = await wooCommerceApi.get('/orders', {
+			params: {
+				customer: user.id,
+				page,
+				per_page,
+			},
+		});
+		orders.data = orders.data.map((order: Order) => {
+			const encryptedOrderId = encryptOrderId(order.id);
+			return {
+				...order,
+				id: encryptedOrderId,
+			};
+		});
+
+		res.send({
+			orders: orders.data,
+			page: orders.headers['x-wp-totalpages'],
+			total: Math.floor(
+				Number(orders.headers['x-wp-total']) / Number(per_page)
+			),
+		});
+	} catch (e) {
+		//@ts-ignore
 		res.status(500).send({ error: e.message });
 	}
 });

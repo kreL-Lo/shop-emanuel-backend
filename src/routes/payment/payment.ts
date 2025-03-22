@@ -107,7 +107,7 @@ router.post('/create-payment-intent', async (req, res) => {
 	}
 });
 
-router.post('/update-order-details', async (req, res) => {
+router.post('/update-order-details', validateToken, async (req, res) => {
 	try {
 		await isValidToken(req);
 		const orderData: OrderData = req.body.orderData;
