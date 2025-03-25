@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { buildInfoGraph, InfoGraph, values } from './utils';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Product } from '../../types/product';
+import findProductsVariations from '../../functions/products/findProductVariation';
 
 const router = Router();
 
@@ -101,9 +102,16 @@ router.post('/placeOrder', async (req, res) => {
 		const ids = payload.products.map((product) => product.id);
 		// @ts-ignore
 		const variation = [dataGraph.latime, dataGraph.lungime, dataGraph.inaltime];
+
+		const pairIdsAndQuantity = payload.products.map((product: any) => {
+			return {
+				id: product?.id,
+				quantity: product?.dbQuantity,
+			};
+		});
 		const productData: Product = {
 			name: `Baterie Customizata ${variation.join(' x ')}`,
-			type: 'grouped',
+			type: 'simple',
 			catalog_visibility: 'hidden',
 			// @ts-ignore
 			status: 'private',
@@ -113,10 +121,30 @@ router.post('/placeOrder', async (req, res) => {
 
 			related_ids: ids,
 			grouped_products: ids,
+			meta_data: [
+				{
+					// @ts-ignore
+					key: 'quantity',
+					value: pairIdsAndQuantity,
+				},
+				{
+					key: 'linkedIds',
+					value: ids,
+				},
+			],
 		};
 		//create
 
 		const product = await wooCommerceApi.post('/products', productData);
+		const grouppedProducts = await wooCommerceApi.get('/products', {
+			params: {
+				include: ids.join(','),
+			},
+		});
+
+		await findProductsVariations(grouppedProducts.data);
+
+		product.data['groupedProducts'] = grouppedProducts.data;
 		res.status(200).json(product.data);
 
 		//

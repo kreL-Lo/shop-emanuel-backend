@@ -97,4 +97,5 @@ export type Product = {
 		}>;
 	};
 	similarProducts?: Product[];
+	groupedProducts?: Product[];
 };

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { ProductVariation } from '../../types/productVariation';
 import { Product } from '../../types/product';
+import findProductsVariations from '../../functions/products/findProductVariation';
 
 const router = Router();
 
@@ -64,6 +65,41 @@ router.post('/items', async (req, res) => {
 					});
 				//@ts-ignore
 				product.cartVariations = variations.data;
+
+				// @ts-ignore
+				if (product.status === 'private') {
+					//get all groupped products
+
+					// 					// here [ { id: 4859, key: 'linkedIds', value: [ [Object] ] } ]
+					const meta =
+						product.meta_data.find((meta: any) => meta.key === 'linkedIds') ||
+						[];
+
+					const ids = meta.value;
+
+					const groupedProducts = await wooCommerceApi.get('/products', {
+						params: {
+							include: ids.join(','),
+						},
+					});
+
+					await findProductsVariations(groupedProducts.data);
+					product.groupedProducts = groupedProducts.data || [];
+					// here [ { id: 4859, key: 'quantity', value: [ [Object] ] } ]
+					//@ts-ignore
+					product?.groupedProducts.forEach((groupedProduct: any) => {
+						const quantity = product.meta_data.find(
+							(meta: any) => meta.key === 'quantity'
+						);
+						// @ts-ignore
+						groupedProduct.quantity =
+							quantity?.value.find(
+								(value: any) => value.id === groupedProduct.id
+							)?.quantity || 0;
+
+						groupedProduct.quantity = Number(groupedProduct.quantity);
+					});
+				}
 				return product;
 			})
 		);
