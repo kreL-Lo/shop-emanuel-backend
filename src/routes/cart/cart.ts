@@ -3,8 +3,53 @@ import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { ProductVariation } from '../../types/productVariation';
 import { Product } from '../../types/product';
 import findProductsVariations from '../../functions/products/findProductVariation';
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = Router();
+
+// Define the encryption key and algorithm
+const ENCRYPTION_KEY = Buffer.from(
+	process.env.ORDER_ENCRIPTION_KEY || '',
+	'hex'
+);
+
+const IV_LENGTH = 16; // AES block size
+
+// Function to encrypt a JSON object
+export const encryptJSON = (
+	data: object,
+	key: Buffer = ENCRYPTION_KEY
+): string => {
+	const iv = crypto.randomBytes(IV_LENGTH); // Generate a random initialization vector
+	const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+
+	const jsonData = JSON.stringify(data); // Convert JSON to string
+	let encrypted = cipher.update(jsonData, 'utf8', 'hex');
+	encrypted += cipher.final('hex');
+
+	// Return the IV and encrypted data as a single string
+	return `${iv.toString('hex')}:${encrypted}`;
+};
+
+// Function to decrypt an encrypted JSON string
+export const decryptJSON = (
+	encryptedData: string,
+	key: Buffer = ENCRYPTION_KEY
+): object => {
+	const [ivHex, encryptedHex] = encryptedData.split(':'); // Split the IV and encrypted data
+	const iv = Buffer.from(ivHex, 'hex');
+	const encryptedText = Buffer.from(encryptedHex, 'hex');
+
+	const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+
+	let decrypted = decipher.update(encryptedText.toString('hex'), 'hex', 'utf8');
+	decrypted += decipher.final('utf8');
+
+	// Parse the decrypted string back into a JSON object
+	return JSON.parse(decrypted);
+};
 
 /*
 Given an array of product ids give me the products and also calculate the sum of the price
@@ -117,7 +162,148 @@ router.post('/items', async (req, res) => {
 			return clonedProduct;
 		});
 
-		res.status(200).send({ products: productsToFormat });
+		// bundleKey validate
+		const bundleKey = req.body.bundleKey || '';
+		const bundleItems = req.body.bundleItems || [];
+		const bundleMainItem = req.body.bundleMainItem || {
+			productId: '',
+			variationId: '',
+		};
+
+		// find bundle main item
+		//get bundle main item producti d
+
+		const emptyState = {
+			bundleKey: '',
+			bundleItems: [],
+			bundleMainItem: {
+				productId: '',
+				variationId: '',
+			},
+		};
+		const prodMainItem = await wooCommerceApi.get('/products', {
+			params: {
+				include: bundleMainItem.productId,
+			},
+		});
+		const bundleMainItemProduct = prodMainItem.data[0];
+		if (!bundleMainItemProduct) {
+			res.status(200).send({ products: productsToFormat, ...emptyState });
+			return;
+		}
+
+		if (bundleMainItemProduct.variationId) {
+			const variation = bundleMainItemProduct.variations.find(
+				(variation: any) => variation.id === bundleMainItem.variationId
+			);
+			if (!variation) {
+				res.status(200).send({ products: productsToFormat, ...emptyState });
+				return;
+			}
+		}
+		let actualItems = [];
+		if (bundleKey === '') {
+			res.status(200).send({ products: productsToFormat, ...emptyState });
+			return;
+		}
+		try {
+			// @ts-ignore
+			actualItems = decryptJSON(bundleKey);
+		} catch (e) {
+			res.status(200).send({ products: productsToFormat, ...emptyState });
+			return;
+		}
+		if (JSON.stringify(actualItems) !== JSON.stringify(bundleItems)) {
+			res.status(200).send({ products: productsToFormat, ...emptyState });
+			return;
+		}
+		res.status(200).send({ products: productsToFormat, ...emptyState });
+	} catch (e) {
+		console.log(e);
+		res.status(500).send('Internal Server Error');
+	}
+});
+
+type Item = {
+	productId: number;
+	variationId: number;
+};
+router.post('/create-bundle-key', async (req, res) => {
+	//
+	//items ->
+	try {
+		const items: Item[] = req.body.items;
+		// check that items are valid
+
+		const productIds = items.map((item) => item.productId);
+		const products = (
+			await wooCommerceApi.get('/products', {
+				params: {
+					include: productIds.join(','),
+				},
+			})
+		).data;
+
+		if (products.length !== productIds.length) {
+			res.status(400).send('Invalid Items');
+			return;
+		}
+		// for all products get variations
+		// @ts-ignore
+		const allVariations = [];
+
+		await Promise.all(
+			products.map(async (product: any) => {
+				const variations = (
+					await wooCommerceApi.get(`/products/${product.id}/variations`)
+				).data;
+				allVariations.push(...variations);
+			})
+		);
+
+		let countItemsVariations = 0;
+		for (let x of items) {
+			if (x.variationId) {
+				countItemsVariations++;
+			}
+		}
+		// @ts-ignore
+		const allVariationIds = allVariations.map((variation) => variation.id);
+		const allVariationIdsSet = new Set(allVariationIds);
+		// if variations exists
+		for (let x of items) {
+			if (x.variationId && !allVariationIdsSet.has(x.variationId)) {
+				res.status(400).send('Invalid Items');
+				return;
+			}
+		}
+
+		const key = encryptJSON(items);
+		const _items = decryptJSON(key);
+		const displayKey = 'bundle_' + key.slice(0, 6);
+		res.status(200).send({ key, displayKey });
+	} catch (e) {
+		console.log(e);
+		res.status(500).send('Internal Server Error');
+	}
+});
+
+router.get('/test-bundley-key', async (req, res) => {
+	try {
+		const key = req.query.key as string;
+		if (!key) {
+			res.status(400).send('Invalid Key');
+			return;
+		}
+		const items = decryptJSON(key);
+		res.status(200).send({ items });
+	} catch (e) {
+		console.log(e);
+		res.status(500).send('Internal Server Error');
+	}
+});
+router.get('/bundle-items', async (req, res) => {
+	try {
 	} catch (e) {
 		console.log(e);
 		res.status(500).send('Internal Server Error');

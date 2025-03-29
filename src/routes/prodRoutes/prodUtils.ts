@@ -22,12 +22,18 @@ export const getProductSimilarProducts = async ({
 		params: {
 			...paramsProduct,
 			category: categoryIdsString,
-			per_page: 10,
+			per_page: 4,
 			exclude: id,
 		},
 	});
 
-	// @ts-ignore
-	// product?.similarProducts = response.data || [];
+	await Promise.all(
+		response.data.map(async (product: Product) => {
+			const variationsResponse = await wooCommerceApi.get(
+				`/products/${product.id}/variations`
+			);
+			product.variations = variationsResponse.data;
+		})
+	);
 	Object.assign(product, { similarProducts: response.data });
 };
