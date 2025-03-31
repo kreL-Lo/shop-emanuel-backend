@@ -186,17 +186,23 @@ router.post('/items', async (req, res) => {
 				include: bundleMainItem.productId,
 			},
 		});
-		const bundleMainItemProduct = prodMainItem.data[0];
+		const bundleMainItemProduct = prodMainItem.data[0] as Product;
 		if (!bundleMainItemProduct) {
 			res.status(200).send({ products: productsToFormat, ...emptyState });
 			return;
 		}
 
-		if (bundleMainItemProduct.variationId) {
-			const variation = bundleMainItemProduct.variations.find(
-				(variation: any) => variation.id === bundleMainItem.variationId
+		if (bundleMainItem.variationId) {
+			const variation = await wooCommerceApi.get(
+				`/products/${bundleMainItemProduct.id}/variations`,
+				{
+					params: {
+						include: bundleMainItem.variationId,
+					},
+				}
 			);
-			if (!variation) {
+			const variationData = variation.data[0] as ProductVariation;
+			if (!variationData) {
 				res.status(200).send({ products: productsToFormat, ...emptyState });
 				return;
 			}
@@ -217,7 +223,13 @@ router.post('/items', async (req, res) => {
 			res.status(200).send({ products: productsToFormat, ...emptyState });
 			return;
 		}
-		res.status(200).send({ products: productsToFormat, ...emptyState });
+
+		res.status(200).send({
+			products: productsToFormat,
+			bundleKey,
+			bundleItems: bundleItems,
+			bundleMainItem: bundleMainItem,
+		});
 	} catch (e) {
 		console.log(e);
 		res.status(500).send('Internal Server Error');

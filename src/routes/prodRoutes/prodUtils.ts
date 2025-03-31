@@ -14,15 +14,15 @@ export const getProductSimilarProducts = async ({
 
 	//get product categories
 
-	const categoryIds = product.categories.map((category: any) => category.id);
-	const categoryIdsString = categoryIds.join(',');
-
-	//get products with the same categories
+	const similarProductIds = product.upsell_ids || [];
+	if (similarProductIds.length === 0) {
+		return [];
+	}
 	const response = await wooCommerceApi.get(`/products`, {
 		params: {
 			...paramsProduct,
-			category: categoryIdsString,
-			per_page: 4,
+			include: similarProductIds.join(','),
+
 			exclude: id,
 		},
 	});
