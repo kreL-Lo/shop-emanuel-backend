@@ -2,7 +2,10 @@ import { Router } from 'express';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
-import { computeProductsTotalPrice } from '../../functions/products/computeProductItemsTotalPrice';
+import {
+	checkBundleItems,
+	computeProductsTotalPrice,
+} from '../../functions/products/computeProductItemsTotalPrice';
 import { createWooCommerceOrder } from '../../functions/orders/createOrder';
 import { OrderData } from '../../functions/orders/orderBuilde';
 import { Order } from '../../types/order';
@@ -23,9 +26,11 @@ router.post('/check-client-secret', async (req, res) => {
 		const clientSecret = req?.body?.clientSecret;
 		const orderId = decryptOrderId(req?.body?.orderId);
 		const items = req?.body?.items;
+		const bundleKey = req.body.bundleKey;
 		const paymentIntendId = clientSecret.split('_secret')[0];
 		const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntendId);
 		const order = await wooCommerceApi.get(`/orders/${orderId}`);
+		//test bundle key
 		// check metadata  of paymentIntend
 		if (paymentIntent.metadata.order_id !== orderId && order) {
 			res.send({ status: 'failed' });
@@ -36,7 +41,7 @@ router.post('/check-client-secret', async (req, res) => {
 				res.send({ status: 'succeeded' });
 			} else if (paymentIntent.status === 'requires_payment_method') {
 				// if items updated
-				const totalPrice = await computeProductsTotalPrice(items);
+				const totalPrice = await computeProductsTotalPrice(items, bundleKey);
 				// update order
 				const existingOrderItems = order.data.line_items.map((item: any) => ({
 					id: item.id,
@@ -49,9 +54,18 @@ router.post('/check-client-secret', async (req, res) => {
 					...(item.variationId && { variation_id: item.variationId }),
 				}));
 
+				const bundleItems = checkBundleItems(bundleKey);
 				// Merge, then filter out zero-quantity items
 				await wooCommerceApi.patch(`/orders/${orderId}`, {
 					line_items: [...existingOrderItems, ...newLineItems], // Remove `quantity: 0`
+					total: totalPrice,
+					//metadata
+					meta_data: [
+						{
+							key: 'bundle_items',
+							value: bundleItems,
+						},
+					],
 				});
 
 				// update stripe
@@ -72,9 +86,10 @@ router.post('/check-client-secret', async (req, res) => {
 });
 router.post('/create-payment-intent', async (req, res) => {
 	try {
+		const bundleKey = req.body.bundleKey;
 		await isValidToken(req);
 		const productItems = req?.body?.items || [];
-		const totalPrice = await computeProductsTotalPrice(productItems);
+		const totalPrice = await computeProductsTotalPrice(productItems, bundleKey);
 		// create order
 
 		// Create Stripe Payment Inte	nt
