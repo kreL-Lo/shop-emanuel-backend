@@ -130,7 +130,6 @@ router.post('/items', async (req, res) => {
 
 					await findProductsVariations(groupedProducts.data);
 					product.groupedProducts = groupedProducts.data || [];
-					// here [ { id: 4859, key: 'quantity', value: [ [Object] ] } ]
 					//@ts-ignore
 					product?.groupedProducts.forEach((groupedProduct: any) => {
 						const quantity = product.meta_data.find(

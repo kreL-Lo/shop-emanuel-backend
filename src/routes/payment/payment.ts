@@ -11,6 +11,7 @@ import { OrderData } from '../../functions/orders/orderBuilde';
 import { Order } from '../../types/order';
 import { decryptOrderId, encryptOrderId } from '../orders/orders';
 import { isValidToken, validateToken } from '../auth/auth';
+import { updateOrderLineItems } from './utils';
 dotenv.config();
 
 const router = Router();
@@ -68,6 +69,8 @@ router.post('/check-client-secret', async (req, res) => {
 					],
 				});
 
+				await updateOrderLineItems(bundleItems, orderId);
+				// make sure that line items price is updated if the linte items are
 				// update stripe
 				await stripe.paymentIntents.update(paymentIntendId, {
 					amount: totalPrice,
@@ -99,6 +102,9 @@ router.post('/create-payment-intent', async (req, res) => {
 			// @ts-ignore
 			user: req['user'] || null,
 		});
+		const bundleItems = checkBundleItems(bundleKey);
+		await updateOrderLineItems(bundleItems, order.id);
+
 		const paymentIntent = await stripe.paymentIntents.create({
 			amount: totalPrice,
 			currency: 'ron', // Romanian Lei
@@ -117,6 +123,7 @@ router.post('/create-payment-intent', async (req, res) => {
 			orderId: encryptOrderId(order.id),
 		});
 	} catch (error) {
+		console.log('here', error);
 		// @ts-ignore
 		res.status(500).send({ error: error.message });
 	}

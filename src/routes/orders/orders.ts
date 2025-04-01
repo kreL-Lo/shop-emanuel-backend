@@ -88,6 +88,7 @@ router.get('/order/:orderKey', async (req, res) => {
 				payment_method: data.payment_method,
 				payment_method_title: data.payment_method_title,
 				products: products,
+				line_items: data.line_items,
 			},
 		});
 	} catch (e) {

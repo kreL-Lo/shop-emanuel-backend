@@ -65,7 +65,6 @@ export const computeProductsTotalPrice = async (
 		const allProducts = await getAllProducts(productItems);
 
 		const bundleItems = checkBundleItems(bundleKey);
-		console.log('here', bundleItems);
 		let total = 0;
 
 		//for each product get variation if exists
