@@ -1,3 +1,7 @@
+import {
+	forgotPasswordTemplateEmail,
+	registerTemplateEmail,
+} from '../../apiSetup/emailSetup';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 
 const express = require('express');
@@ -11,7 +15,7 @@ require('dotenv').config();
 const WOO_BASE_URL = process.env.WOO_BASE_URL;
 
 const WP_URL = `${WOO_BASE_URL}/wp-json/jwt-auth/v1/token`;
-
+const JWT_SECRET = process.env.JWT_SECRET_EMAIL;
 //@ts-ignore
 router.post('/login', async (req, res) => {
 	const { username, password } = req.body;
@@ -140,25 +144,97 @@ export const validateToken = async (req, res, next) => {
 router.post('/register', async (req, res) => {
 	const { email, password, firstName, lastName } = req.body;
 	try {
-		//create a woo commerce customer
-		const response = await wooCommerceApi.post('/customers', {
+		//check if user exists
+		const response = await wooCommerceApi.get(`/customers?email=${email}`);
+		if (response.data.length > 0) {
+			return res.status(401).json({ message: 'Invalid' });
+		}
+		const token = jwt.sign(
+			{ password, email, firstName, lastName },
+			JWT_SECRET,
+			{ expiresIn: '1h' }
+		);
+
+		registerTemplateEmail({
+			name: firstName,
+			email: email,
+			url: 'https://atelieruldebaterii.ro/verify-email?token=' + token,
+		});
+		res.status(200).json({
+			message: 'Email sent',
+		});
+	} catch (error) {
+		console.log('here', error);
+		return res.status(401).json({ message: 'Invalid credentials' });
+	}
+});
+
+// @ts-ignore
+router.post('/verify-email', async (req, res) => {
+	const { token } = req.body;
+	try {
+		const decoded = jwt.verify(token, JWT_SECRET);
+		const { email, password, firstName, lastName } = decoded;
+
+		await wooCommerceApi.post('/customers', {
 			email,
 			password,
 			first_name: firstName,
 			last_name: lastName,
 		});
-		// create token
-		const responseToken = await axios.post(WP_URL, {
-			username: email,
-			password,
-		});
 
-		return res.json({
-			token: responseToken.data.token,
-			user: response.data,
+		return res.status(200).json({
+			status: 'success',
 		});
 	} catch (error) {
+		console.log('here', error);
+		return res.status(401).json({ message: 'Invalid token' });
+	}
+});
+
+// @ts-ignore
+router.post('/reset-password', async (req, res) => {
+	const { email } = req.body;
+	try {
+		console.log('email', email);
+		const response = await wooCommerceApi.get(`/customers?email=${email}`);
+		if (response.data.length === 0) {
+			return res.status(401).json({ message: 'Invalid' });
+		}
+		const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '1h' });
+		forgotPasswordTemplateEmail({
+			name: response.data[0].first_name,
+			email: email,
+			url: 'https://atelieruldebaterii.ro/reset-password?token=' + token,
+			contact: 'TODO:INSERT EMAIL',
+		});
+		res.status(200).json({
+			message: 'Email sent',
+		});
+	} catch (error) {
+		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid credentials' });
 	}
 });
+
+// @ts-ignore
+router.post('/update-password', async (req, res) => {
+	const { token, password } = req.body;
+	try {
+		const decoded = jwt.verify(token, JWT_SECRET);
+		const { email } = decoded;
+
+		await wooCommerceApi.put(`/customers/${email}`, {
+			password,
+		});
+
+		return res.status(200).json({
+			status: 'success',
+		});
+	} catch (error) {
+		console.log('here', error);
+		return res.status(401).json({ message: 'Invalid token' });
+	}
+});
+
 export default router;
