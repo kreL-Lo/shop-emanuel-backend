@@ -12,6 +12,22 @@ require('dotenv').config();
 const router = express.Router();
 require('dotenv').config();
 
+setTimeout(async () => {
+	try {
+		// const testMail = 'ciprian.miru@gmail.com';
+		// const customer = await wooCommerceApi.get(`/customers?email=${testMail}`);
+		// const id = customer.data[0].id;
+		// await wooCommerceApi.put(`/customers/${id}`, {
+		// 	meta_data: [
+		// 		{
+		// 			key: 'reset_password_count',
+		// 			value: 0,
+		// 		},
+		// 	],
+		// });
+		// console.log('reset count to 0');
+	} catch (e) {}
+}, 2000);
 const WOO_BASE_URL = process.env.WOO_BASE_URL;
 
 const WP_URL = `${WOO_BASE_URL}/wp-json/jwt-auth/v1/token`;
@@ -164,7 +180,6 @@ router.post('/register', async (req, res) => {
 			message: 'Email sent',
 		});
 	} catch (error) {
-		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid credentials' });
 	}
 });
@@ -187,7 +202,6 @@ router.post('/verify-email', async (req, res) => {
 			status: 'success',
 		});
 	} catch (error) {
-		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid token' });
 	}
 });
@@ -196,23 +210,62 @@ router.post('/verify-email', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
 	const { email } = req.body;
 	try {
-		console.log('email', email);
 		const response = await wooCommerceApi.get(`/customers?email=${email}`);
+		// if reset password count is 1 then invalid
+		if (
+			response.data[0].meta_data.find(
+				// @ts-ignore
+				(item) => item.key === 'reset_password_count'
+			)
+		) {
+			const value = Number(
+				response.data[0].meta_data.find(
+					// @ts-ignore
+					(item) => item.key === 'reset_password_count'
+				)?.value
+			);
+
+			if (value > 0) {
+				return res.status(401).json({ message: 'Invalid' });
+			}
+		}
 		if (response.data.length === 0) {
 			return res.status(401).json({ message: 'Invalid' });
 		}
+
 		const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '1h' });
+		//update customer metq
+		await wooCommerceApi.put(`/customers/${response.data[0].id}`, {
+			meta_data: [
+				{
+					key: 'reset_password_count',
+					value: 1,
+				},
+			],
+		});
+		// add a agenda job that will end in 10 minutes and delete meta_data
+		//in 10 minutes i want to delete the meta_data
+		setTimeout(async () => {
+			await wooCommerceApi.put(`/customers/${response.data[0].id}`, {
+				meta_data: [
+					{
+						key: 'reset_password_count',
+						value: 0,
+					},
+				],
+			});
+		}, 10 * 60 * 1000);
+
 		forgotPasswordTemplateEmail({
 			name: response.data[0].first_name,
 			email: email,
-			url: 'https://atelieruldebaterii.ro/reset-password?token=' + token,
+			url: 'https://atelieruldebaterii.ro/update-password?token=' + token,
 			contact: 'TODO:INSERT EMAIL',
 		});
 		res.status(200).json({
 			message: 'Email sent',
 		});
 	} catch (error) {
-		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid credentials' });
 	}
 });
@@ -223,8 +276,13 @@ router.post('/update-password', async (req, res) => {
 	try {
 		const decoded = jwt.verify(token, JWT_SECRET);
 		const { email } = decoded;
-
-		await wooCommerceApi.put(`/customers/${email}`, {
+		//get customer id
+		const response = await wooCommerceApi.get(`/customers?email=${email}`);
+		if (response.data.length === 0) {
+			return res.status(401).json({ message: 'Invalid' });
+		}
+		const id = response.data[0].id;
+		await wooCommerceApi.put(`/customers/${id}`, {
 			password,
 		});
 
@@ -232,7 +290,6 @@ router.post('/update-password', async (req, res) => {
 			status: 'success',
 		});
 	} catch (error) {
-		console.log('here', error);
 		return res.status(401).json({ message: 'Invalid token' });
 	}
 });
