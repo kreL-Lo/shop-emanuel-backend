@@ -12,6 +12,13 @@ import { Order } from '../../types/order';
 import { decryptOrderId, encryptOrderId } from '../orders/orders';
 import { isValidToken, validateToken } from '../auth/auth';
 import { updateOrderLineItems } from './utils';
+import {
+	buildAddressLine,
+	buildHtmlForProducts,
+	imgSrc,
+	orderTemplateEmail,
+} from '../../apiSetup/emailSetup';
+import { Customer } from '../../types/customer';
 dotenv.config();
 
 const router = Router();
@@ -123,7 +130,6 @@ router.post('/create-payment-intent', async (req, res) => {
 			orderId: encryptOrderId(order.id),
 		});
 	} catch (error) {
-		console.log('here', error);
 		// @ts-ignore
 		res.status(500).send({ error: error.message });
 	}
@@ -162,6 +168,40 @@ router.post('/update-order-details', validateToken, async (req, res) => {
 			status: orderData.deliveryMethod === 'ramburs' ? 'on-hold' : 'pending', //on-hold = ramburs, pending = card
 			payment_method: orderData.deliveryMethod === 'ramburs' ? 'cod' : 'card',
 		};
+
+		//get customer by id
+		// customer_id
+		const data = await wooCommerceApi.get(`/customers/${customer_id}`);
+
+		const customer: Customer = data.data;
+
+		const orderBlock = await wooCommerceApi.get(`/orders/${order.id}`);
+		const actualOrder = orderBlock.data as Order;
+
+		try {
+			orderTemplateEmail({
+				name: customer.first_name,
+				order_number: order.id,
+				order_date: new Date().toLocaleDateString(),
+				url: `https://atelieruldebaterii.ro/account/orders/${encryptOrderId(
+					order.id
+				)}`,
+				order_items: buildHtmlForProducts(
+					(actualOrder.line_items || []).map((item) => ({
+						id: item.product_id?.toString() || '',
+						name: item.name || '',
+						price: item.price?.toString() || '',
+						quantity: item.quantity?.toString() || '',
+						image: imgSrc(item.image.src) || '',
+					}))
+				),
+				shipping_address: buildAddressLine(order.shipping || {}),
+				order_total: actualOrder.total?.toString() || '',
+				email: customer.email,
+			});
+		} catch (error) {
+			console.log('error', error);
+		}
 		if (customer_id) {
 			order.customer_id = customer_id;
 		}

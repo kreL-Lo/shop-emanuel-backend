@@ -260,7 +260,6 @@ router.post('/reset-password', async (req, res) => {
 			name: response.data[0].first_name,
 			email: email,
 			url: 'https://atelieruldebaterii.ro/update-password?token=' + token,
-			contact: 'TODO:INSERT EMAIL',
 		});
 		res.status(200).json({
 			message: 'Email sent',

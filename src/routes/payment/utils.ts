@@ -13,8 +13,6 @@ export const updateOrderLineItems = async (
 		quantity: 0, // Placeholder, will be removed before sending
 	}));
 
-	console.log('here', orderPayload);
-
 	const newItems = orderPayload.line_items?.map((item) => {
 		let key = `${item.product_id}`;
 		if (item.variation_id) {
