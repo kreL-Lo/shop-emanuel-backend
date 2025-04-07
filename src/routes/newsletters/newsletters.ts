@@ -1,7 +1,15 @@
 import * as SibApiV3Sdk from 'sib-api-v3-typescript';
 import dotenv from 'dotenv';
 import express from 'express';
-import { createBatteryEmailTemplate } from '../../apiSetup/emailSetup';
+import {
+	buildHtmlForProducts,
+	createBatteryEmailTemplate,
+	imgSrc,
+	promotedProductsEmail,
+} from '../../apiSetup/emailSetup';
+import { queryForPromotedProducts } from '../prodRoutes/prodUtils';
+import wooCommerceApi from '../../apiSetup/wooCommerceApi';
+import { Product } from '../../types/product';
 
 const cron = require('node-cron');
 
@@ -24,6 +32,36 @@ const triggerCreateBatteryEmail = () => {
 	});
 };
 
+const triggerPromotedProductsEmail = async () => {
+	const prodIds = await queryForPromotedProducts();
+	const actualProducts = await wooCommerceApi.get('/products', {
+		params: {
+			include: prodIds.map((item) => item.id).join(','),
+		},
+	});
+	const prods = actualProducts.data.map((item: Product) => ({
+		id: item.id,
+		name: item.name,
+		price: item.price,
+
+		// imgSrc(item.image.src)
+		image: imgSrc(item.images[0].src) || '',
+		url: `https://atelieruldebaterii.ro/products/${item.slug}`,
+	}));
+
+	const html = buildHtmlForProducts(prods, 'product-button');
+
+	promotedProductsEmail({
+		name: 'User',
+		products: html,
+		email: 'skh24482@bcooq.com',
+	});
+	return prods;
+};
+
+setTimeout(() => {
+	triggerPromotedProductsEmail();
+}, 2000); // 24 hours
 cron.schedule('0 10 * * 5', () => {
 	console.log('running a task every Friday at 10:00');
 	triggerCreateBatteryEmail();

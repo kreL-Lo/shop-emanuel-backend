@@ -11,6 +11,13 @@ const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 const sendApiInstance = new SibApiV3Sdk.SendersApi();
 const { noreply, newsletter } = senders;
 
+const TEMPLATE_IDS = {
+	register: 1,
+	'forgot-password': 3,
+	order: 4,
+	battery: 5,
+	'promoted-products': 8,
+};
 sendApiInstance.setApiKey(
 	SibApiV3Sdk.SendersApiApiKeys.apiKey,
 	// @ts-ignore
@@ -36,9 +43,8 @@ export const registerTemplateEmail = async ({
 	try {
 		const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 		// make sure that from is valid
-		const TEMPLATE_ID = 1;
 		sendSmtpEmail.to = [{ email, name }];
-		sendSmtpEmail.templateId = TEMPLATE_ID;
+		sendSmtpEmail.templateId = TEMPLATE_IDS.register;
 		sendSmtpEmail.params = {
 			name: name,
 			url: url,
@@ -67,9 +73,9 @@ export const forgotPasswordTemplateEmail = async ({
 	try {
 		const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 		// make sure that from is valid
-		const TEMPLATE_ID = 3;
+
 		sendSmtpEmail.to = [{ email, name }];
-		sendSmtpEmail.templateId = TEMPLATE_ID;
+		sendSmtpEmail.templateId = TEMPLATE_IDS['forgot-password'];
 		sendSmtpEmail.params = {
 			name: name,
 			url: url,
@@ -143,9 +149,8 @@ export const orderTemplateEmail = async ({
 		};
 		const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 		// make sure that from is valid
-		const TEMPLATE_ID = 4;
 		sendSmtpEmail.to = [{ email, name }];
-		const template = await getEmailTemplate(TEMPLATE_ID);
+		const template = await getEmailTemplate(TEMPLATE_IDS['order']);
 		const tBody = template.body;
 		const buildSubject = overrideOverExistingParams(params, tBody.subject);
 		sendSmtpEmail.subject = buildSubject;
@@ -217,6 +222,23 @@ const buildHtmlForProduct = (item: {
 	</div>
 </div>`;
 };
+
+const buildHtmlForProductWithButton = (item: {
+	id: string;
+	name: string;
+	price: string;
+	image: string;
+	url?: string;
+}) => {
+	return `<div style="display: flex; align-items: center; margin-bottom: 10px; overflow: hidden; margin-top: 10px">
+	<img src="${item.image}" alt="${item.name}" style="width: 100px; height: 100px; object-fit: cover; margin-right: 10px; border-radius: 8px;" />
+	<div style="flex: 1;">
+		<h2 style="font-size: 16px; margin: 0;">${item.name}</h2>
+		<p style="margin: 5px 0;">Pret: <strong>${item.price} RON</strong></p>
+		<a href="${item.url}" style="display: inline-block; margin-top: 10px; padding: 10px 15px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; font-size: 14px;">Product</a>
+	</div>
+</div>`;
+};
 export const imgSrc = (src: string) => {
 	// if src contains localhost:8083/wordpress then replace with cms.atelieruldebaterii.ro
 	if (src === '') {
@@ -238,11 +260,21 @@ export const buildHtmlForProducts = (
 		price: string;
 		quantity: string;
 		image: string;
-	}[]
+		url?: string;
+	}[],
+	type = 'product'
 ) => {
-	const html = items.map((item) => {
-		return buildHtmlForProduct(item);
-	});
+	let html: string[] = [];
+	if (type === 'product') {
+		html = items.map((item) => {
+			return buildHtmlForProduct(item);
+		});
+	}
+	if (type === 'product-button') {
+		html = items.map((item) => {
+			return buildHtmlForProductWithButton(item);
+		});
+	}
 	return html.join('');
 };
 
@@ -259,4 +291,46 @@ export const buildAddressLine = (addres: Order['billing']) => {
 	const addressLine =
 		addressParts.length > 0 ? addressParts.join(', ') : 'Address not available';
 	return addressLine;
+};
+
+export const promotedProductsEmail = async ({
+	name,
+	products,
+	email,
+}: {
+	name: string;
+	products: string;
+	email: string;
+}) => {
+	try {
+		const params = {
+			name: name,
+			products: products,
+			contact: process.env.COMPANY_EMAIL,
+		};
+		const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+		// make sure that from is valid
+		sendSmtpEmail.to = [{ email, name }];
+		const template = await getEmailTemplate(TEMPLATE_IDS['promoted-products']);
+		const tBody = template.body;
+		const buildSubject = overrideOverExistingParams(params, tBody.subject);
+		sendSmtpEmail.subject = buildSubject;
+		sendSmtpEmail.htmlContent = overrideOverExistingParams(
+			params,
+			tBody.htmlContent
+		);
+		sendSmtpEmail.sender = {
+			// @ts-ignore
+			name: senders.newsletter.name,
+			email: senders.newsletter.email,
+		};
+
+		console.log('here', sendSmtpEmail);
+		//get a sender
+		apiInstance.sendTransacEmail(sendSmtpEmail);
+
+		return {};
+	} catch (error) {
+		console.error('Error sending email:', error);
+	}
 };
