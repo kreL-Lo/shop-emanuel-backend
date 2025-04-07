@@ -1,7 +1,7 @@
 import * as SibApiV3Sdk from 'sib-api-v3-typescript';
 import dotenv from 'dotenv';
-import { htmlToString } from './test';
 import { Order } from '../types/order';
+import { senders } from '../routes/newsletters/utils';
 dotenv.config();
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY; // Ensure this is set in your .env file
@@ -9,6 +9,7 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY; // Ensure this is set in your .
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
 const sendApiInstance = new SibApiV3Sdk.SendersApi();
+const { noreply, newsletter } = senders;
 
 sendApiInstance.setApiKey(
 	SibApiV3Sdk.SendersApiApiKeys.apiKey,
@@ -42,7 +43,10 @@ export const registerTemplateEmail = async ({
 			name: name,
 			url: url,
 		};
-
+		sendSmtpEmail.sender = {
+			name: noreply.name,
+			email: noreply.email,
+		};
 		apiInstance.sendTransacEmail(sendSmtpEmail);
 
 		return {};
@@ -72,6 +76,10 @@ export const forgotPasswordTemplateEmail = async ({
 			contact: process.env.COMPANY_EMAIL,
 		};
 
+		sendSmtpEmail.sender = {
+			name: noreply.name,
+			email: noreply.email,
+		};
 		apiInstance.sendTransacEmail(sendSmtpEmail);
 
 		return {};
@@ -137,7 +145,6 @@ export const orderTemplateEmail = async ({
 		// make sure that from is valid
 		const TEMPLATE_ID = 4;
 		sendSmtpEmail.to = [{ email, name }];
-		const senders = await sendApiInstance.getSenders();
 		const template = await getEmailTemplate(TEMPLATE_ID);
 		const tBody = template.body;
 		const buildSubject = overrideOverExistingParams(params, tBody.subject);
@@ -148,11 +155,44 @@ export const orderTemplateEmail = async ({
 		);
 		sendSmtpEmail.sender = {
 			// @ts-ignore
-			name: 'Atelierul de baterii',
-			email: 'emanuelbuzatu1@gmail.com',
+			name: senders.noreply.name,
+			email: senders.noreply.email,
 		};
 
 		//get a sender
+		apiInstance.sendTransacEmail(sendSmtpEmail);
+
+		return {};
+	} catch (error) {
+		console.error('Error sending email:', error);
+	}
+};
+
+export const createBatteryEmailTemplate = async ({
+	name,
+	email,
+	url,
+}: {
+	name: string;
+	email: string;
+	url: string;
+}) => {
+	try {
+		const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+		// make sure that from is valid
+		const TEMPLATE_ID = 5;
+		sendSmtpEmail.to = [{ email, name }];
+		sendSmtpEmail.templateId = TEMPLATE_ID;
+		sendSmtpEmail.params = {
+			name: name,
+			url: url,
+			contact: process.env.COMPANY_EMAIL,
+		};
+
+		sendSmtpEmail.sender = {
+			name: senders.newsletter.name,
+			email: senders.newsletter.email,
+		};
 		apiInstance.sendTransacEmail(sendSmtpEmail);
 
 		return {};
@@ -220,46 +260,3 @@ export const buildAddressLine = (addres: Order['billing']) => {
 		addressParts.length > 0 ? addressParts.join(', ') : 'Address not available';
 	return addressLine;
 };
-
-const testOrderTemplate = async () => {
-	const payload = {
-		order_number: '366',
-		url: 'test',
-		order_date: '4/4/2025',
-		order_total: 'test 100 ron',
-		order_items: buildHtmlForProducts([
-			{
-				id: '1',
-				name: 'test1',
-				price: '100',
-				quantity: '2',
-				image: 'https://picsum.photos/300/300',
-			},
-			{
-				id: '2',
-				name: 'test2',
-				price: '200',
-				quantity: '3',
-				image: 'https://picsum.photos/300/300',
-			},
-		]),
-		shipping_address: buildAddressLine({
-			first_name: 'John',
-			last_name: 'Doe',
-			address_1: '123 Main St',
-			city: 'New York',
-			state: 'NY',
-			postcode: '10001',
-			country: 'USA',
-		}),
-		email: 'ciprian.miru@gmail.com',
-		name: 'ciprian miru',
-	};
-	orderTemplateEmail(payload);
-
-	//get template data
-};
-
-setTimeout(() => {
-	// testOrderTemplate();
-}, 1000);

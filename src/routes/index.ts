@@ -10,6 +10,7 @@ import userRoute from './user/user';
 import reviews from './reviews/reviews';
 import dBattery from './dBattery/dBattery';
 import filter from './filter/filter';
+import newsletter from './newsletters/newsletters';
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use('/user', userRoute);
 router.use('/reviews', reviews);
 router.use('/designBattery', dBattery);
 router.use('/filter', filter);
+router.use('/newsletter', newsletter);
 
 export default router;

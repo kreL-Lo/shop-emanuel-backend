@@ -3,6 +3,7 @@ import {
 	registerTemplateEmail,
 } from '../../apiSetup/emailSetup';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
+import { subscribeUser } from '../newsletters/newsletters';
 
 const express = require('express');
 const axios = require('axios');
@@ -197,7 +198,9 @@ router.post('/verify-email', async (req, res) => {
 			first_name: firstName,
 			last_name: lastName,
 		});
-
+		try {
+			subscribeUser(email, firstName, lastName);
+		} catch (e) {}
 		return res.status(200).json({
 			status: 'success',
 		});
