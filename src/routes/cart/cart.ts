@@ -359,7 +359,7 @@ router.post('/sync-cart', validateToken, async (req, res) => {
 				},
 			});
 		}
-		const data = await wooCommerceApi.put(`/customers/${user.id}`, {
+		await wooCommerceApi.put(`/customers/${user.id}`, {
 			// @ts-ignore
 			meta_data: user.meta_data,
 		});
