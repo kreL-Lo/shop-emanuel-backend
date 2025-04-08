@@ -5,6 +5,8 @@ import { Product } from '../../types/product';
 import findProductsVariations from '../../functions/products/findProductVariation';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import { validateToken } from '../auth/auth';
+import { Customer } from '../../types/customer';
 dotenv.config();
 
 const router = Router();
@@ -315,6 +317,56 @@ router.get('/test-bundley-key', async (req, res) => {
 });
 router.get('/bundle-items', async (req, res) => {
 	try {
+	} catch (e) {
+		console.log(e);
+		res.status(500).send('Internal Server Error');
+	}
+});
+
+router.post('/sync-cart', validateToken, async (req, res) => {
+	try {
+		// @ts-ignore
+		const user = req.user as Customer;
+
+		const { items, bundleKey, bundleItems, bundleMainItem, orderNote } =
+			req.body;
+
+		const cartObjectIndex = user.meta_data.findIndex(
+			(meta) => meta.key === 'cartObject'
+		);
+
+		if (cartObjectIndex !== -1) {
+			// Update existing cartObject
+			user.meta_data[cartObjectIndex].value = {
+				items: items,
+				bundleKey: bundleKey,
+				bundleItems: bundleItems,
+				bundleMainItem: bundleMainItem,
+				orderNote: orderNote,
+				deltaTime: new Date().getTime(),
+			};
+		} else {
+			// @ts-ignore
+			user.meta_data.push({
+				key: 'cartObject',
+				value: {
+					items: items,
+					bundleKey: bundleKey,
+					bundleItems: bundleItems,
+					bundleMainItem: bundleMainItem,
+					orderNote: orderNote,
+					deltaTime: new Date().getTime(),
+				},
+			});
+		}
+		const data = await wooCommerceApi.put(`/customers/${user.id}`, {
+			// @ts-ignore
+			meta_data: user.meta_data,
+		});
+
+		res.status(200).send({
+			message: 'Cart synced successfully',
+		});
 	} catch (e) {
 		console.log(e);
 		res.status(500).send('Internal Server Error');

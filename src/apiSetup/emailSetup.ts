@@ -235,7 +235,7 @@ const buildHtmlForProductWithButton = (item: {
 	<div style="flex: 1;">
 		<h2 style="font-size: 16px; margin: 0;">${item.name}</h2>
 		<p style="margin: 5px 0;">Pret: <strong>${item.price} RON</strong></p>
-		<a href="${item.url}" style="display: inline-block; margin-top: 10px; padding: 10px 15px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; font-size: 14px;">Product</a>
+		<a href="${item.url}" style="display: inline-block; margin-top: 10px; padding: 10px 15px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; font-size: 14px;">Vezi Produsul</a>
 	</div>
 </div>`;
 };

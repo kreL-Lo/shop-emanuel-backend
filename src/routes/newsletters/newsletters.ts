@@ -51,20 +51,33 @@ const triggerPromotedProductsEmail = async () => {
 
 	const html = buildHtmlForProducts(prods, 'product-button');
 
-	promotedProductsEmail({
-		name: 'User',
-		products: html,
-		email: 'skh24482@bcooq.com',
+	getAllContacts().then((contacts) => {
+		contacts.forEach((r: { email: string; name: string }) => {
+			const object = {
+				name: r.name,
+				email: r.email,
+				products: html,
+			};
+			try {
+				promotedProductsEmail(object);
+			} catch (error) {
+				console.log('error', error);
+			}
+		});
 	});
-	return prods;
 };
-
-setTimeout(() => {
-	triggerPromotedProductsEmail();
-}, 2000); // 24 hours
+//TODO: a small test for cron job
 cron.schedule('0 10 * * 5', () => {
-	console.log('running a task every Friday at 10:00');
+	console.log('running a triggerCreateBatteryEmail every Friday at 10:00');
 	triggerCreateBatteryEmail();
+});
+
+//  schedule every wednesday at 10:00
+cron.schedule('0 10 * * 3', () => {
+	console.log(
+		'running a triggerPromotedProductsEmail every Wednesday at 10:00'
+	);
+	triggerPromotedProductsEmail();
 });
 
 const router = express.Router();
