@@ -17,6 +17,7 @@ const TEMPLATE_IDS = {
 	order: 4,
 	battery: 5,
 	'promoted-products': 8,
+	'empty-cart': 9,
 };
 sendApiInstance.setApiKey(
 	SibApiV3Sdk.SendersApiApiKeys.apiKey,
@@ -327,6 +328,39 @@ export const promotedProductsEmail = async ({
 
 		console.log('here', sendSmtpEmail);
 		//get a sender
+		apiInstance.sendTransacEmail(sendSmtpEmail);
+
+		return {};
+	} catch (error) {
+		console.error('Error sending email:', error);
+	}
+};
+
+export const emptyCartEmailTemplate = async ({
+	name,
+	email,
+	url,
+}: {
+	name: string;
+	email: string;
+	url: string;
+}) => {
+	try {
+		const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+		// make sure that from is valid
+		const TEMPLATE_ID = TEMPLATE_IDS['empty-cart'];
+		sendSmtpEmail.to = [{ email, name }];
+		sendSmtpEmail.templateId = TEMPLATE_ID;
+		sendSmtpEmail.params = {
+			name: name,
+			url: url,
+			contact: process.env.COMPANY_EMAIL,
+		};
+
+		sendSmtpEmail.sender = {
+			name: senders.newsletter.name,
+			email: senders.newsletter.email,
+		};
 		apiInstance.sendTransacEmail(sendSmtpEmail);
 
 		return {};

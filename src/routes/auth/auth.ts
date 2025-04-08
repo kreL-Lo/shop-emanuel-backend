@@ -35,12 +35,7 @@ const WP_URL = `${WOO_BASE_URL}/wp-json/jwt-auth/v1/token`;
 const JWT_SECRET = process.env.JWT_SECRET_EMAIL;
 //@ts-ignore
 router.post('/login', async (req, res) => {
-	const {
-		username,
-		password,
-		cacheLocalStorage = false,
-		cart: localCartCacheObject,
-	} = req.body;
+	const { username, password } = req.body;
 	try {
 		const response = await axios.post(WP_URL, {
 			username,
@@ -223,6 +218,10 @@ router.post('/verify-email', async (req, res) => {
 					value: {
 						...cart,
 					},
+				},
+				{
+					key: 'cart_updated_at',
+					value: new Date().getTime(),
 				},
 			],
 		});

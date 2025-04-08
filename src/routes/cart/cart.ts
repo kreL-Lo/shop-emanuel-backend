@@ -343,7 +343,6 @@ router.post('/sync-cart', validateToken, async (req, res) => {
 				bundleItems: bundleItems,
 				bundleMainItem: bundleMainItem,
 				orderNote: orderNote,
-				deltaTime: new Date().getTime(),
 			};
 		} else {
 			// @ts-ignore
@@ -355,10 +354,25 @@ router.post('/sync-cart', validateToken, async (req, res) => {
 					bundleItems: bundleItems,
 					bundleMainItem: bundleMainItem,
 					orderNote: orderNote,
-					deltaTime: new Date().getTime(),
 				},
 			});
 		}
+
+		// add a metadata key cart_updated_at
+		const cartUpdatedAtIndex = user.meta_data.findIndex(
+			(meta) => meta.key === 'cart_updated_at'
+		);
+		if (cartUpdatedAtIndex !== -1) {
+			// Update existing cart_updated_at
+			user.meta_data[cartUpdatedAtIndex].value = new Date().getTime();
+		} else {
+			// @ts-ignore
+			user.meta_data.push({
+				key: 'cart_updated_at',
+				value: new Date().getTime(),
+			});
+		}
+
 		await wooCommerceApi.put(`/customers/${user.id}`, {
 			// @ts-ignore
 			meta_data: user.meta_data,

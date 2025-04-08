@@ -1,6 +1,8 @@
 import db from '../../apiSetup/db';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Product } from '../../types/product';
+import dayjs from 'dayjs';
+import { Customer } from '../../types/customer';
 export const paramsProduct = {
 	status: 'publish',
 };
@@ -54,4 +56,39 @@ export const queryForPromotedProducts: () => Promise<
 	return rows.map((row: { ID: number; post_title: string }) => ({
 		id: row.ID,
 	}));
+};
+
+export const queryUsersMetadata = async () => {
+	const substract = dayjs(new Date()).subtract(1, 'minute');
+	// const subtract = dayjs(new Date()).subtract(1, 'day');
+	const value = new Date(substract.toDate()).getTime();
+	const [rows] = await db.query(`
+		SELECT user_id, meta_key, meta_value
+		FROM wp_usermeta
+			WHERE meta_key = 'cart_updated_at'
+			AND CAST(meta_value AS UNSIGNED) < ${value}
+	`);
+
+	const users = await Promise.all(
+		rows.map(
+			async (row: {
+				user_id: number;
+				meta_key: string;
+				meta_value: string;
+			}) => {
+				const user = await wooCommerceApi.get(`/customers/${row.user_id}`);
+
+				const data = user.data as Customer;
+
+				const firstName = data?.first_name !== '' ? data?.first_name : 'User';
+
+				return {
+					...row,
+					email: data.email,
+					name: firstName || 'User',
+				};
+			}
+		)
+	);
+	return users;
 };

@@ -4,12 +4,17 @@ import express from 'express';
 import {
 	buildHtmlForProducts,
 	createBatteryEmailTemplate,
+	emptyCartEmailTemplate,
 	imgSrc,
 	promotedProductsEmail,
 } from '../../apiSetup/emailSetup';
-import { queryForPromotedProducts } from '../prodRoutes/prodUtils';
+import {
+	queryForPromotedProducts,
+	queryUsersMetadata,
+} from '../prodRoutes/prodUtils';
 import wooCommerceApi from '../../apiSetup/wooCommerceApi';
 import { Product } from '../../types/product';
+import dayjs from 'dayjs';
 
 const cron = require('node-cron');
 
@@ -92,13 +97,39 @@ sendApiInstance.setApiKey(
 	// @ts-ignore
 	BREVO_API_KEY
 );
-
-// Configure Brevo API Client
 const contactsApiInstance = new SibApiV3Sdk.ContactsApi();
 contactsApiInstance.setApiKey(
 	SibApiV3Sdk.ContactsApiApiKeys.apiKey,
 	BREVO_API_KEY
 );
+
+const triggerEmptyCartEmail = async () => {
+	queryUsersMetadata().then((res) => {
+		const list = res;
+
+		list.forEach((r: { email: string; name: string }) => {
+			const object = {
+				name: r.name,
+				email: r.email,
+				url: `https://atelieruldebaterii.ro/login?email=${r.email}redirect=cart`,
+			};
+			try {
+				emptyCartEmailTemplate(object);
+			} catch (error) {
+				console.log('error', error);
+			}
+		});
+	});
+};
+
+//SCHEDULE FROM HOURT TO HOUR
+
+cron.schedule('0 * * * *', () => {
+	const currentHour = dayjs().format('HH');
+	console.log(`running a triggerEmptyCartEmail every hour ${currentHour}`);
+	triggerEmptyCartEmail();
+});
+// Configure Brevo API Client
 
 const getAllContacts = async () => {
 	const contacts = await contactsApiInstance.getContacts();
