@@ -35,7 +35,12 @@ const WP_URL = `${WOO_BASE_URL}/wp-json/jwt-auth/v1/token`;
 const JWT_SECRET = process.env.JWT_SECRET_EMAIL;
 //@ts-ignore
 router.post('/login', async (req, res) => {
-	const { username, password } = req.body;
+	const {
+		username,
+		password,
+		cacheLocalStorage = false,
+		cart: localCartCacheObject,
+	} = req.body;
 	try {
 		const response = await axios.post(WP_URL, {
 			username,
@@ -187,16 +192,39 @@ router.post('/register', async (req, res) => {
 
 // @ts-ignore
 router.post('/verify-email', async (req, res) => {
-	const { token } = req.body;
+	const { token, cartObject } = req.body;
 	try {
 		const decoded = jwt.verify(token, JWT_SECRET);
 		const { email, password, firstName, lastName } = decoded;
+		const cart = {
+			items: [],
+			bundleKey: '',
+			bundleItems: [],
+			bundleMainItem: '',
+			orderNote: '',
+			deltaTime: new Date().getTime(),
+		};
 
+		if (cartObject) {
+			cart.items = cartObject.items;
+			cart.bundleKey = cartObject.bundleKey;
+			cart.bundleItems = cartObject.bundleItems;
+			cart.bundleMainItem = cartObject.bundleMainItem;
+			cart.orderNote = cartObject.orderNote;
+		}
 		await wooCommerceApi.post('/customers', {
 			email,
 			password,
 			first_name: firstName,
 			last_name: lastName,
+			meta_data: [
+				{
+					key: 'cartObject',
+					value: {
+						...cart,
+					},
+				},
+			],
 		});
 		try {
 			subscribeUser(email, firstName, lastName);
