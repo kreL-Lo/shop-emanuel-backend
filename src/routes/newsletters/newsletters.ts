@@ -72,13 +72,16 @@ const triggerPromotedProductsEmail = async () => {
 	});
 };
 //TODO: a small test for cron job
+//	schedule every friday at 10:00
 cron.schedule('0 10 * * 5', () => {
+	// cron.schedule('*/10 * * * * *', () => {
 	console.log('running a triggerCreateBatteryEmail every Friday at 10:00');
 	triggerCreateBatteryEmail();
 });
 
 //  schedule every wednesday at 10:00
 cron.schedule('0 10 * * 3', () => {
+	// cron.schedule('*/10 * * * * *', () => {
 	console.log(
 		'running a triggerPromotedProductsEmail every Wednesday at 10:00'
 	);
@@ -108,6 +111,7 @@ const triggerEmptyCartEmail = async () => {
 		const list = res;
 
 		list.forEach((r: { email: string; name: string }) => {
+			console.log('r', r);
 			const object = {
 				name: r.name,
 				email: r.email,
@@ -122,9 +126,8 @@ const triggerEmptyCartEmail = async () => {
 	});
 };
 
-//SCHEDULE FROM HOURT TO HOUR
-
 cron.schedule('0 * * * *', () => {
+	// cron.schedule('*/10 * * * * *', () => {
 	const currentHour = dayjs().format('HH');
 	console.log(`running a triggerEmptyCartEmail every hour ${currentHour}`);
 	triggerEmptyCartEmail();

@@ -326,7 +326,6 @@ export const promotedProductsEmail = async ({
 			email: senders.newsletter.email,
 		};
 
-		console.log('here', sendSmtpEmail);
 		//get a sender
 		apiInstance.sendTransacEmail(sendSmtpEmail);
 
