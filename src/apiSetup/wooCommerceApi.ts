@@ -15,7 +15,7 @@ const accessToken = '';
 const accessTokenSecret = '';
 
 const api = new WooCommerceRestApi({
-	url: `http://localhost:8013`,
+	url: `http://81.181.166.178:8013`,
 	consumerKey: process.env.WOO_CONSUMER_KEY!,
 	consumerSecret: process.env.WOO_CONSUMER_SECRET!,
 	version: 'wc/v3',
