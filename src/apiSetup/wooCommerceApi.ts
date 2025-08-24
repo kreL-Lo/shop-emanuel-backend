@@ -4,8 +4,8 @@
 
 import oauth from 'oauth-1.0a';
 import crypto from 'crypto';
-import dotenv from 'dotenv';
 import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
