@@ -6,7 +6,8 @@ import webHookRouter from './routes/payment/webhook';
 //@ts-check
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
+const PORT = 80;
 // CORS configuration
 const webhookRawBodyParser = express.raw({ type: 'application/json' });
 
@@ -44,6 +45,10 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 app.use('/api', allRoutes);
+// add test route
+app.get('/test', (req, res) => {
+	res.send('API is running...');
+});
 
 app.listen(PORT, () => {
 	console.log(`Server running on http://localhost:${PORT}`);
