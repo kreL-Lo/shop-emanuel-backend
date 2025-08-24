@@ -21,12 +21,10 @@ export const getProductSimilarProducts = async ({
 		return [];
 	}
 	const response = await wooCommerceApi.get(`/products`, {
-		params: {
-			...paramsProduct,
-			include: similarProductIds.join(','),
+		...paramsProduct,
+		include: similarProductIds.join(','),
 
-			exclude: id,
-		},
+		exclude: id,
 	});
 
 	await Promise.all(

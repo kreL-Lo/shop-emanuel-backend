@@ -29,7 +29,9 @@ router.get('/:productId', async (req, res) => {
 			params.rating = rating;
 		}
 
-		const response = await wooCommerceApi.get('/products/reviews', { params });
+		const response = await wooCommerceApi.get('/products/reviews', {
+			...params,
+		});
 
 		let sortedReviews = response.data;
 
@@ -72,9 +74,7 @@ router.get('/starsCount/:productId', async (req, res) => {
 		//get product
 
 		const data = await wooCommerceApi.get(`/products/${productId}`, {
-			params: {
-				...paramsProduct,
-			},
+			...paramsProduct,
 		});
 		const product: Product = data.data;
 		if (!data.data) {
@@ -82,7 +82,8 @@ router.get('/starsCount/:productId', async (req, res) => {
 		}
 
 		const response = await wooCommerceApi.get('/products/reviews', {
-			params: { product: productId, per_page: 100 },
+			product: productId,
+			per_page: 100,
 		});
 		const starsCount = response.data.reduce(
 			(acc: any, review: any) => {
@@ -134,9 +135,7 @@ router.post('/', validateToken, async (req, res) => {
 
 		const { product_id } = req.body;
 		const orders = await wooCommerceApi.get('/orders', {
-			params: {
-				customer_id: user.id,
-			},
+			customer_id: user.id,
 		});
 		const order = orders.data.find((order: Order) => {
 			if (!order.line_items) {
@@ -153,10 +152,8 @@ router.post('/', validateToken, async (req, res) => {
 		// count how many review have been made by reviewer
 		const { review, reviewer, reviewer_email, rating } = req.body;
 		const reviews = await wooCommerceApi.get(`/products/reviews/`, {
-			params: {
-				product: req.body.product_id,
-				reviewer_email: req.body.reviewer_email,
-			},
+			product: req.body.product_id,
+			reviewer_email: req.body.reviewer_email,
 		});
 		if (reviews.data.length < 3) {
 			const response = await wooCommerceApi.post('/products/reviews', {
@@ -193,9 +190,7 @@ router.get('/allow/:productId', validateToken, async (req, res) => {
 
 		//get user orders and check if the product is in the order
 		const orders = await wooCommerceApi.get('/orders', {
-			params: {
-				customer_id: user.id,
-			},
+			customer_id: user.id,
 		});
 
 		const order = orders.data.find((order: Order) => {

@@ -12,9 +12,7 @@ router.get('/specific-category/:query', async (req, res) => {
 		const { query } = req.params;
 		//get category father
 		const response = await wooCommerceApi.get('/products/categories', {
-			params: {
-				slug: query,
-			},
+			slug: query,
 		});
 		const category: Category = response.data[0];
 		let parentCategory = null;
@@ -41,15 +39,13 @@ router.get('/specific-category/:query', async (req, res) => {
 
 		// get products of category
 		const products = await wooCommerceApi.get('/products', {
-			params: queryProducts,
+			...queryProducts,
 		});
 		await findProductsVariations(products.data);
 
 		//get subcategories
 		const subCategories = await wooCommerceApi.get('/products/categories', {
-			params: {
-				parent: parentCategory.id,
-			},
+			parent: parentCategory.id,
 		});
 
 		const relatedCategories = [parentCategory, ...subCategories.data];
@@ -75,9 +71,7 @@ router.get('/specific-category/:query', async (req, res) => {
 router.get('/', async (req, res) => {
 	try {
 		const response = await wooCommerceApi.get('/products/categories', {
-			params: {
-				parent: 0,
-			},
+			parent: 0,
 		});
 		// get all parent categories
 
@@ -86,18 +80,14 @@ router.get('/', async (req, res) => {
 			// @ts-ignore
 			response.data.map(async (category) => {
 				const products = await wooCommerceApi.get('/products', {
-					params: {
-						category: category.id,
-						per_page: 5,
-						...paramsProduct,
-					},
+					category: category.id,
+					per_page: 5,
+					...paramsProduct,
 				});
 
 				//get all subcategories
 				const subCategories = await wooCommerceApi.get('/products/categories', {
-					params: {
-						parent: category.id,
-					},
+					parent: category.id,
 				});
 				await findProductsVariations(products.data);
 				return {
@@ -120,9 +110,7 @@ router.get('/', async (req, res) => {
 router.get('/all', async (req, res) => {
 	try {
 		const response = await wooCommerceApi.get('/products/categories', {
-			params: {
-				parent: 0,
-			},
+			parent: 0,
 		});
 		// get all parent categories
 
@@ -132,9 +120,7 @@ router.get('/all', async (req, res) => {
 			response.data.map(async (category) => {
 				//get all subcategories
 				const subCategories = await wooCommerceApi.get('/products/categories', {
-					params: {
-						parent: category.id,
-					},
+					parent: category.id,
 				});
 				return {
 					...category,

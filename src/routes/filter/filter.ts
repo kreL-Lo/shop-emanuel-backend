@@ -7,20 +7,16 @@ route.get('/stats', async (req, res) => {
 	//get highest product price
 	try {
 		const highestPrice = await wooCommerceApi.get('/products', {
-			params: {
-				orderby: 'price',
-				order: 'desc',
-				per_page: 1,
-			},
+			orderby: 'price',
+			order: 'desc',
+			per_page: 1,
 		});
 
 		const maxPrice = highestPrice.data[0].price;
 
 		//get all categories
 		const categoriesgory = await wooCommerceApi.get('/products/categories', {
-			params: {
-				per_page: 100,
-			},
+			per_page: 100,
 		});
 
 		const dataCat = categoriesgory.data as Category[];

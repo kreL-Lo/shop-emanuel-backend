@@ -61,9 +61,7 @@ router.get('/order/:orderKey', async (req, res) => {
 		let products: ProductWithQuantity[] = [];
 		if (data.line_items) {
 			products = await wooCommerceApi.get('/products', {
-				params: {
-					include: data.line_items.map((item) => item.product_id).join(','),
-				},
+				include: data.line_items.map((item) => item.product_id).join(','),
 			});
 			// @ts-ignore
 			await findProductsVariations(products.data);
@@ -105,11 +103,9 @@ router.get('/', validateToken, async (req, res) => {
 		const user = req?.user;
 		const { page = 1, per_page = 5 } = req.query;
 		const orders = await wooCommerceApi.get('/orders', {
-			params: {
-				customer: user.id,
-				page,
-				per_page,
-			},
+			customer: user.id,
+			page,
+			per_page,
 		});
 		orders.data = orders.data.map((order: Order) => {
 			const encryptedOrderId = encryptOrderId(order.id);

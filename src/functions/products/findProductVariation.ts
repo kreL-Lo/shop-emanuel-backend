@@ -17,9 +17,7 @@ const findProductVariation = async (product: Product) => {
 	}
 	//get review
 	const rating = await wooCommerceApi.get(`/products/reviews`, {
-		params: {
-			product: product.id,
-		},
+		product: product.id,
 	});
 	if (rating.data.length === 1) {
 		//edge case

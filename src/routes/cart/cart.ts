@@ -83,9 +83,7 @@ router.post('/items', async (req, res) => {
 		const products: { data: [Product] } = await wooCommerceApi.get(
 			'/products',
 			{
-				params: {
-					include: allProductId.join(','),
-				},
+				include: allProductId.join(','),
 				//@ts-ignore
 			}
 		);
@@ -102,9 +100,7 @@ router.post('/items', async (req, res) => {
 				// @ts-ignore
 				const variations: { data: [ProductVariation] } = await wooCommerceApi
 					.get(`/products/${product.id}/variations`, {
-						params: {
-							include: productItems[product.id].join(','),
-						},
+						include: productItems[product.id].join(','),
 						//@ts-ignore
 					})
 					.catch((e) => {
@@ -125,9 +121,7 @@ router.post('/items', async (req, res) => {
 					const ids = meta.value;
 
 					const groupedProducts = await wooCommerceApi.get('/products', {
-						params: {
-							include: ids.join(','),
-						},
+						include: ids.join(','),
 					});
 
 					await findProductsVariations(groupedProducts.data);
@@ -183,9 +177,7 @@ router.post('/items', async (req, res) => {
 			},
 		};
 		const prodMainItem = await wooCommerceApi.get('/products', {
-			params: {
-				include: bundleMainItem.productId,
-			},
+			include: bundleMainItem.productId,
 		});
 		const bundleMainItemProduct = prodMainItem.data[0] as Product;
 		if (!bundleMainItemProduct) {
@@ -197,9 +189,7 @@ router.post('/items', async (req, res) => {
 			const variation = await wooCommerceApi.get(
 				`/products/${bundleMainItemProduct.id}/variations`,
 				{
-					params: {
-						include: bundleMainItem.variationId,
-					},
+					include: bundleMainItem.variationId,
 				}
 			);
 			const variationData = variation.data[0] as ProductVariation;
@@ -251,9 +241,7 @@ router.post('/create-bundle-key', async (req, res) => {
 		const productIds = items.map((item) => item.productId);
 		const products = (
 			await wooCommerceApi.get('/products', {
-				params: {
-					include: productIds.join(','),
-				},
+				include: productIds.join(','),
 			})
 		).data;
 

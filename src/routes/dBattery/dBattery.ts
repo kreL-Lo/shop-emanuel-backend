@@ -137,9 +137,7 @@ router.post('/placeOrder', async (req, res) => {
 
 		const product = await wooCommerceApi.post('/products', productData);
 		const grouppedProducts = await wooCommerceApi.get('/products', {
-			params: {
-				include: ids.join(','),
-			},
+			include: ids.join(','),
 		});
 
 		await findProductsVariations(grouppedProducts.data);

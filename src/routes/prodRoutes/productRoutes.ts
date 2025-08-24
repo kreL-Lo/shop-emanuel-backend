@@ -89,12 +89,10 @@ router.get('/noutati', async (req, res) => {
 		const response = await wooCommerceApi.get('/products', {
 			// limit to 10 products
 			// first 10 products
-			params: {
-				per_page: 10, // Limit to 10 products
-				orderby: 'date', // Order by creation date
-				order: 'desc', // Descending order (most recent first)
-				...paramsProduct,
-			},
+			per_page: 10, // Limit to 10 products
+			orderby: 'date', // Order by creation date
+			order: 'desc', // Descending order (most recent first)
+			...paramsProduct,
 		});
 		const products = response.data;
 		await findProductsVariations(products);
@@ -121,9 +119,7 @@ router.get('/product/:slug', async (req, res) => {
 		}
 
 		const rating = await wooCommerceApi.get(`/products/reviews`, {
-			params: {
-				product: product.id,
-			},
+			product: product.id,
 		});
 		if (rating.data.length === 1) {
 			product.average_rating = rating.data[0].rating;

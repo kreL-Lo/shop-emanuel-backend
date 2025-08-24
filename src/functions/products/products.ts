@@ -5,9 +5,7 @@ export const getAllProducts = async (productItems: ProductItem[]) => {
 	try {
 		const productIds = productItems.map((item) => item.productId);
 		const products = await wooCommerceApi.get(`/products`, {
-			params: {
-				include: productIds.join(','),
-			},
+			include: productIds.join(','),
 		});
 		let productData = [];
 		for (const item of productItems) {
