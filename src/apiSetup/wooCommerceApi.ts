@@ -27,7 +27,7 @@ const oauth1 = oauth({
 //NOT TOUCHING CUZ IT FUCKING WORKS
 // Axios instance setup
 const wooCommerceApi = axios.create({
-	baseURL: `${process.env.WOO_BASE_URL}/wp-json/wc/v3`,
+	baseURL: `http://localhost:8013/wp-json/wc/v3`,
 	// auth: {
 	// 	username: process.env.WOO_CONSUMER_KEY || '',
 	// 	password: process.env.WOO_CONSUMER_SECRET || '',
