@@ -63,4 +63,21 @@ wooCommerceApi.interceptors.request.use(
 	}
 );
 
+//  add a test request to verify it's working
+// wooCommerceApi
+// 	.get('/products', { params: { per_page: 2 } })
+const test = async () => {
+	try {
+		const response = await wooCommerceApi.get('/products', {
+			params: { per_page: 2 },
+		});
+		console.log('Products:', response.data);
+	} catch (error) {
+		console.error(
+			'Error fetching products:',
+			error.response ? error.response.data : error.message
+		);
+	}
+};
+test();
 export default wooCommerceApi;
