@@ -2,7 +2,6 @@
 // src/utils/wooCommerceApi.js
 //dot env not working
 
-import oauth from 'oauth-1.0a';
 import crypto from 'crypto';
 import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
 import dotenv from 'dotenv';
@@ -15,16 +14,8 @@ const consumerSecret = process.env.WOO_CONSUMER_SECRET;
 const accessToken = '';
 const accessTokenSecret = '';
 
-const oauth1 = oauth({
-	consumer: { key: consumerKey, secret: consumerSecret },
-	token: { key: accessToken, secret: accessTokenSecret },
-	signature_method: 'HMAC-SHA1',
-	hash_function: (base_string, key) =>
-		crypto.createHmac('sha1', key).update(base_string).digest('base64'),
-});
-
 const api = new WooCommerceRestApi({
-	url: process.env.WOO_BASE_URL!,
+	url: `http://localhost:8013`,
 	consumerKey: process.env.WOO_CONSUMER_KEY!,
 	consumerSecret: process.env.WOO_CONSUMER_SECRET!,
 	version: 'wc/v3',
