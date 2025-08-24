@@ -67,6 +67,8 @@ wooCommerceApi.interceptors.request.use(
 // wooCommerceApi
 // 	.get('/products', { params: { per_page: 2 } })
 const test = async () => {
+	console.log('WOO COMMERCE URL', process.env.WOO_BASE_URL);
+
 	try {
 		const response = await wooCommerceApi.get('/products', {
 			params: { per_page: 2 },
