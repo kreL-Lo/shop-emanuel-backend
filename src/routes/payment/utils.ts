@@ -49,7 +49,7 @@ export const updateOrderLineItems = async (
 		};
 	});
 	// patch woocommerce order
-	await wooCommerceApi.patch(`/orders/${orderId}`, {
+	await wooCommerceApi.put(`/orders/${orderId}`, {
 		// @ts-ignore
 		line_items: [...existingOrderItems, ...newItemsWithoutId],
 	});

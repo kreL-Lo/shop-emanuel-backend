@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
+import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
 
 const consumerKey = process.env.WOO_CONSUMER_KEY;
 const consumerSecret = process.env.WOO_CONSUMER_SECRET;
@@ -22,64 +23,27 @@ const oauth1 = oauth({
 		crypto.createHmac('sha1', key).update(base_string).digest('base64'),
 });
 
+const api = new WooCommerceRestApi({
+	url: process.env.WOO_BASE_URL!,
+	consumerKey: process.env.WOO_CONSUMER_KEY!,
+	consumerSecret: process.env.WOO_CONSUMER_SECRET!,
+	version: 'wc/v3',
+});
 // Request details
 
 //NOT TOUCHING CUZ IT FUCKING WORKS
 // Axios instance setup
-const wooCommerceApi = axios.create({
-	baseURL: `http://localhost:8013/wp-json/wc/v3`,
-	// auth: {
-	// 	username: process.env.WOO_CONSUMER_KEY || '',
-	// 	password: process.env.WOO_CONSUMER_SECRET || '',
-	// },
-});
-//TODO: uncomment this when production
-// Add OAuth1 interceptor to the Axios instance
-wooCommerceApi.interceptors.request.use(
-	(request) => {
-		// Prepare the request parameters for OAuth
+const wooCommerceApi = api;
 
-		const urlWithParams = new URL(request.baseURL + request.url); // Start with the baseURL and request.url
-		if (request.params) {
-			Object.keys(request.params).forEach((key) => {
-				urlWithParams.searchParams.append(key, request.params[key]);
-			});
-		}
-		const requestData = {
-			url: urlWithParams.toString(),
-			method: request.method.toUpperCase(),
-		};
-
-		// Generate OAuth1 signature for the request
-		const oauthHeaders = oauth1.toHeader(oauth1.authorize(requestData));
-
-		// Add OAuth headers to the request
-		request.headers = oauthHeaders;
-
-		return request;
-	},
-	(error) => {
-		return Promise.reject(error);
-	}
-);
-
-//  add a test request to verify it's working
-// wooCommerceApi
-// 	.get('/products', { params: { per_page: 2 } })
-const test = async () => {
-	console.log('WOO COMMERCE URL', process.env.WOO_BASE_URL);
-
+// fetch all products from WooCommerce //
+export async function fetchWooCommerceProducts() {
 	try {
-		const response = await wooCommerceApi.get('/products', {
-			params: { per_page: 2 },
-		});
-		console.log('Products:', response.data);
+		const response = await wooCommerceApi.get('products');
+		console.log('WooCommerce Products:', response.data);
+		return response;
 	} catch (error) {
-		console.error(
-			'Error fetching products:',
-			error.response ? error.response.data : error.message
-		);
+		throw new Error(error);
 	}
-};
-test();
+}
+fetchWooCommerceProducts();
 export default wooCommerceApi;

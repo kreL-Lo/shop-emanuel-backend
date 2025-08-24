@@ -64,7 +64,7 @@ router.post('/check-client-secret', async (req, res) => {
 
 				const bundleItems = checkBundleItems(bundleKey);
 				// Merge, then filter out zero-quantity items
-				await wooCommerceApi.patch(`/orders/${orderId}`, {
+				await wooCommerceApi.put(`/orders/${orderId}`, {
 					line_items: [...existingOrderItems, ...newLineItems], // Remove `quantity: 0`
 					total: totalPrice,
 					//metadata

@@ -12,6 +12,8 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
+		"@types/woocommerce__woocommerce-rest-api": "^1.0.5",
+		"@woocommerce/woocommerce-rest-api": "^1.0.2",
 		"axios": "^1.8.1",
 		"cors": "^2.8.5",
 		"crypto": "^1.0.1",
