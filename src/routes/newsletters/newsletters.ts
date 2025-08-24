@@ -126,12 +126,12 @@ const triggerEmptyCartEmail = async () => {
 	});
 };
 
-cron.schedule('0 * * * *', () => {
-	// cron.schedule('*/10 * * * * *', () => {
-	const currentHour = dayjs().format('HH');
-	console.log(`running a triggerEmptyCartEmail every hour ${currentHour}`);
-	triggerEmptyCartEmail();
-});
+// cron.schedule('0 * * * *', () => {
+// 	// cron.schedule('*/10 * * * * *', () => {
+// 	const currentHour = dayjs().format('HH');
+// 	console.log(`running a triggerEmptyCartEmail every hour ${currentHour}`);
+// 	triggerEmptyCartEmail();
+// });
 // Configure Brevo API Client
 
 const getAllContacts = async () => {

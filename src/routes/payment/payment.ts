@@ -172,15 +172,16 @@ router.post('/update-order-details', validateToken, async (req, res) => {
 		//get customer by id
 		// customer_id
 		const data = await wooCommerceApi.get(`/customers/${customer_id}`);
-
 		const customer: Customer = data.data;
-
+		if (!customer) {
+			res.status(500).send({ error: 'Internal eerror , no user found' });
+		}
 		const orderBlock = await wooCommerceApi.get(`/orders/${order.id}`);
 		const actualOrder = orderBlock.data as Order;
 
 		try {
 			orderTemplateEmail({
-				name: customer.first_name,
+				name: customer?.first_name || 'User',
 				order_number: order.id,
 				order_date: new Date().toLocaleDateString(),
 				url: `https://atelieruldebaterii.ro/account/orders/${encryptOrderId(
