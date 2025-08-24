@@ -5,9 +5,9 @@
 import oauth from 'oauth-1.0a';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
-dotenv.config();
-import axios from 'axios';
 import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
+
+dotenv.config();
 
 const consumerKey = process.env.WOO_CONSUMER_KEY;
 const consumerSecret = process.env.WOO_CONSUMER_SECRET;
