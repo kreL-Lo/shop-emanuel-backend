@@ -12,6 +12,36 @@ const webhookRawBodyParser = express.raw({ type: 'application/json' });
 
 app.post('/webhook', webhookRawBodyParser, webHookRouter);
 
+// Request logging middleware
+app.use((req, res, next) => {
+	const startTime = Date.now();
+
+	// Log the incoming request
+	console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+
+	// Capture the original end function
+	const originalEnd = res.end;
+
+	// Override the end function to log response
+	res.end = function (
+		chunk?: any,
+		encoding?: any,
+		cb?: (() => void) | undefined
+	) {
+		const duration = Date.now() - startTime;
+		console.log(
+			`[${new Date().toISOString()}] ${req.method} ${req.url} - ${
+				res.statusCode
+			} (${duration}ms)`
+		);
+
+		// Call the original end function and return its result
+		return originalEnd.call(this, chunk, encoding, cb);
+	};
+
+	next();
+});
+
 //@ts-ignore
 app.use((req, res, next) => {
 	// Set Cache-Control headers
