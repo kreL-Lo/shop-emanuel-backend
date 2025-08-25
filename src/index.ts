@@ -1,51 +1,61 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 import allRoutes from './routes/index';
 import webHookRouter from './routes/payment/webhook';
-//@ts-check
+
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
-// CORS configuration
-const webhookRawBodyParser = express.raw({ type: 'application/json' });
 
-app.post('/webhook', webhookRawBodyParser, webHookRouter);
+// Pick a backend port that doesn't clash with Next dev (often 8000)
+const PORT = process.env.PORT || 8000;
 
-// Request logging middleware
+const allowedOrigins = ['http://localhost:3000', 'https://armondone.com'];
+
+// ---- CORS FIRST (before any routes) ----
+app.use(
+	cors({
+		origin: (origin, cb) => {
+			// Allow requests without Origin (e.g., curl, same-origin)
+			if (!origin) return cb(null, true);
+			return allowedOrigins.includes(origin)
+				? cb(null, true)
+				: cb(new Error('Not allowed by CORS'));
+		},
+		credentials: true,
+		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+	})
+);
+
+// Make sure Express sets these for every response (esp. for proxies/caches)
 app.use((req, res, next) => {
-	const startTime = Date.now();
-
-	// Log the incoming request
-	console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-
-	// Capture the original end function
-	const originalEnd = res.end;
-
-	// Override the end function to log response
-	res.end = function (
-		chunk?: any,
-		encoding?: any,
-		cb?: (() => void) | undefined
-	) {
-		const duration = Date.now() - startTime;
-		console.log(
-			`[${new Date().toISOString()}] ${req.method} ${req.url} - ${
-				res.statusCode
-			} (${duration}ms)`
-		);
-
-		// Call the original end function and return its result
-		return originalEnd.call(this, chunk, encoding, cb);
-	};
-
+	res.setHeader('Vary', 'Origin');
 	next();
 });
 
-//@ts-ignore
+// Dedicated preflight for webhook (important when using express.raw)
+app.options(
+	'/webhook',
+	cors({
+		origin: allowedOrigins,
+		credentials: true,
+		methods: ['POST', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+	})
+);
+
+// ---- Body parsers ----
+// Webhook must use raw BEFORE json for signature verification.
+const webhookRawBodyParser = express.raw({ type: 'application/json' });
+app.post('/webhook', webhookRawBodyParser, webHookRouter);
+
+// Regular JSON for everything else
+app.use(express.json({ limit: '5mb' }));
+
+// (Optional) Request logging / cache headers
 app.use((req, res, next) => {
-	console.log('Middleware triggered for:', req.method, req.url);
-	// Set Cache-Control headers
 	res.set(
 		'Cache-Control',
 		'no-store, no-cache, must-revalidate, proxy-revalidate'
@@ -53,29 +63,10 @@ app.use((req, res, next) => {
 	res.set('Pragma', 'no-cache');
 	res.set('Expires', '0');
 	res.set('Surrogate-Control', 'no-store');
-
-	// Set CORS headers
-	// res.header('Access-Control-Allow-Origin', 'https://armondone.com');
-	// allow localhost for testing
-	res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-	res.header(
-		'Access-Control-Allow-Headers',
-		'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With'
-	);
-
-	// Handle preflight OPTIONS requests
-	if (req.method === 'OPTIONS') {
-		return res.status(200).end();
-	}
-
-	// Pass control to the next middleware
 	next();
 });
 
-// Middleware to parse JSON
-app.use(express.json());
-
+// Your API routes
 app.use('/api', allRoutes);
 
 app.listen(PORT, () => {
