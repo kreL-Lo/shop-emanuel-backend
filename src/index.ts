@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 	res.set('Surrogate-Control', 'no-store');
 
 	// Set CORS headerssudo fuser -k 3001/tcp
-	res.header('Access-Control-Allow-Origin', 'https://atelieruldebaterii.ro');
+	res.header('Access-Control-Allow-Origin', 'https://aromdone.com');
 	res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 	res.header(
 		'Access-Control-Allow-Headers',

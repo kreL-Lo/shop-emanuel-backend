@@ -26,7 +26,7 @@ const triggerCreateBatteryEmail = () => {
 			const object = {
 				name: r.name,
 				email: r.email,
-				url: 'https://atelieruldebaterii.ro/design-battery',
+				url: 'https://armondone.com/design-battery',
 			};
 			try {
 				createBatteryEmailTemplate(object);
@@ -49,7 +49,7 @@ const triggerPromotedProductsEmail = async () => {
 
 		// imgSrc(item.image.src)
 		image: imgSrc(item.images[0].src) || '',
-		url: `https://atelieruldebaterii.ro/products/${item.slug}`,
+		url: `https://armondone.com/products/${item.slug}`,
 	}));
 
 	const html = buildHtmlForProducts(prods, 'product-button');
@@ -113,7 +113,7 @@ const triggerEmptyCartEmail = async () => {
 			const object = {
 				name: r.name,
 				email: r.email,
-				url: `https://atelieruldebaterii.ro/login?email=${r.email}redirect=cart`,
+				url: `https://armondone.com/login?email=${r.email}redirect=cart`,
 			};
 			try {
 				emptyCartEmailTemplate(object);

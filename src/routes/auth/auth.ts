@@ -159,7 +159,7 @@ router.post('/register', async (req, res) => {
 		registerTemplateEmail({
 			name: firstName,
 			email: email,
-			url: 'https://atelieruldebaterii.ro/verify-email?token=' + token,
+			url: 'https://armondone.com/verify-email?token=' + token,
 		});
 		res.status(200).json({
 			message: 'Email sent',
@@ -273,7 +273,7 @@ router.post('/reset-password', async (req, res) => {
 		forgotPasswordTemplateEmail({
 			name: response.data[0].first_name,
 			email: email,
-			url: 'https://atelieruldebaterii.ro/update-password?token=' + token,
+			url: 'https://armondone.com/update-password?token=' + token,
 		});
 		res.status(200).json({
 			message: 'Email sent',

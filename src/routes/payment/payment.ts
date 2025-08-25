@@ -184,9 +184,7 @@ router.post('/update-order-details', validateToken, async (req, res) => {
 				name: customer?.first_name || 'User',
 				order_number: order.id,
 				order_date: new Date().toLocaleDateString(),
-				url: `https://atelieruldebaterii.ro/account/orders/${encryptOrderId(
-					order.id
-				)}`,
+				url: `https://armondone.com/account/orders/${encryptOrderId(order.id)}`,
 				order_items: buildHtmlForProducts(
 					(actualOrder.line_items || []).map((item) => ({
 						id: item.product_id?.toString() || '',

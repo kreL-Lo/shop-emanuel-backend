@@ -241,14 +241,14 @@ const buildHtmlForProductWithButton = (item: {
 </div>`;
 };
 export const imgSrc = (src: string) => {
-	// if src contains localhost:8083/wordpress then replace with cms.atelieruldebaterii.ro
+	// if src contains localhost:8083/wordpress then replace with cms.armondone.com
 	if (src === '') {
-		return 'https://atelieruldebaterii.ro/battery.jpg';
+		return 'https://armondone.com/battery.jpg';
 	}
 	if (!src) return '';
 	const replaced = src.replace(
 		/http:\/\/localhost:8013\/wordpress/g,
-		'https://cms.atelieruldebaterii.ro'
+		'https://cms.armondone.com'
 	);
 
 	return replaced;

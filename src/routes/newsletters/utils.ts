@@ -33,14 +33,14 @@ export const senders = {
 	newsletter: {
 		id: 3,
 		name: 'newsletter',
-		email: 'newsletter@atelieruldebaterii.ro',
+		email: 'newsletter@armondone.com',
 		active: true,
 		ips: [],
 	},
 	noreply: {
 		id: 2,
 		name: 'noreply',
-		email: 'noreply@atelieruldebaterii.ro',
+		email: 'noreply@armondone.com',
 		active: true,
 		ips: [],
 	},
