@@ -51,7 +51,7 @@ app.use((req, res, next) => {
 		req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ||
 		req.headers['x-real-ip'] ||
 		'unknown';
-
+	console.log('here', res);
 	// Log the incoming request with IP
 	console.log(
 		`[${new Date().toISOString()}] ${clientIP} - ${req.method} ${req.url}`
