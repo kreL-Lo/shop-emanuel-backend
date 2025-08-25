@@ -20,7 +20,7 @@ export const getProductSimilarProducts = async ({
 	if (similarProductIds.length === 0) {
 		return [];
 	}
-	const response = await wooCommerceApi.get(`/products`, {
+	const response = await wooCommerceApi.get(`products`, {
 		...paramsProduct,
 		include: similarProductIds.join(','),
 
@@ -30,7 +30,7 @@ export const getProductSimilarProducts = async ({
 	await Promise.all(
 		response.data.map(async (product: Product) => {
 			const variationsResponse = await wooCommerceApi.get(
-				`/products/${product.id}/variations`
+				`products/${product.id}/variations`
 			);
 			product.variations = variationsResponse.data;
 		})
@@ -74,7 +74,7 @@ export const queryUsersMetadata = async () => {
 				meta_key: string;
 				meta_value: string;
 			}) => {
-				const user = await wooCommerceApi.get(`/customers/${row.user_id}`);
+				const user = await wooCommerceApi.get(`customers/${row.user_id}`);
 
 				const data = user.data as Customer;
 

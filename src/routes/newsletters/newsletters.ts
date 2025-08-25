@@ -39,7 +39,7 @@ const triggerCreateBatteryEmail = () => {
 
 const triggerPromotedProductsEmail = async () => {
 	const prodIds = await queryForPromotedProducts();
-	const actualProducts = await wooCommerceApi.get('/products', {
+	const actualProducts = await wooCommerceApi.get('products', {
 		include: prodIds.map((item) => item.id).join(','),
 	});
 	const prods = actualProducts.data.map((item: Product) => ({

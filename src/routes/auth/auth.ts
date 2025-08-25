@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
 
 		const decode = jwt.decode(response.data.token, { complete: true });
 		const id = decode.payload.data.user.id;
-		const customer = await wooCommerceApi.get(`/customers/${id}`);
+		const customer = await wooCommerceApi.get(`customers/${id}`);
 		const data = {
 			token: response.data.token,
 			user: customer.data,
@@ -80,7 +80,7 @@ router.get('/validate', async (req, res) => {
 			const id = d.payload.data.user.id;
 			// get user
 			// user wocoomerce api
-			const customer = await wooCommerceApi.get(`/customers/${id}`);
+			const customer = await wooCommerceApi.get(`customers/${id}`);
 
 			// const data = user.data;
 			return res.json({ valid: true, user: customer.data });
@@ -112,7 +112,7 @@ export const isValidToken = async (req) => {
 			//put user in req
 			const d = jwt.decode(token, { complete: true });
 			const id = d.payload.data.user.id;
-			const data = await wooCommerceApi.get(`/customers/${id}`);
+			const data = await wooCommerceApi.get(`customers/${id}`);
 			req['userId'] = id;
 			req['user'] = data.data;
 			return true;
@@ -144,7 +144,7 @@ export const validateToken = async (req, res, next) => {
 			const id = d.payload.data.user.id;
 			// put the id in the request
 			req['userId'] = id;
-			const data = await wooCommerceApi.get(`/customers/${id}`);
+			const data = await wooCommerceApi.get(`customers/${id}`);
 			req['user'] = data.data;
 			next();
 		} else {
@@ -162,7 +162,7 @@ router.post('/register', async (req, res) => {
 	const { email, password, firstName, lastName } = req.body;
 	try {
 		//check if user exists
-		const response = await wooCommerceApi.get(`/customers?email=${email}`);
+		const response = await wooCommerceApi.get(`customers?email=${email}`);
 		if (response.data.length > 0) {
 			return res.status(401).json({ message: 'Invalid' });
 		}
@@ -240,7 +240,7 @@ router.post('/verify-email', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
 	const { email } = req.body;
 	try {
-		const response = await wooCommerceApi.get(`/customers?email=${email}`);
+		const response = await wooCommerceApi.get(`customers?email=${email}`);
 		// if reset password count is 1 then invalid
 		if (
 			response.data[0].meta_data.find(
@@ -306,7 +306,7 @@ router.post('/update-password', async (req, res) => {
 		const decoded = jwt.verify(token, JWT_SECRET);
 		const { email } = decoded;
 		//get customer id
-		const response = await wooCommerceApi.get(`/customers?email=${email}`);
+		const response = await wooCommerceApi.get(`customers?email=${email}`);
 		if (response.data.length === 0) {
 			return res.status(401).json({ message: 'Invalid' });
 		}

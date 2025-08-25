@@ -9,14 +9,14 @@ const findProductVariation = async (product: Product) => {
 		const variationId = product?.variations[0];
 		if (variationId) {
 			const response = await wooCommerceApi.get(
-				`/products/${product.id}/variations/${variationId}`
+				`products/${product.id}/variations/${variationId}`
 			);
 			//@ts-ignore
 			product.displayVariation = response.data;
 		}
 	}
 	//get review
-	const rating = await wooCommerceApi.get(`/products/reviews`, {
+	const rating = await wooCommerceApi.get(`products/reviews`, {
 		product: product.id,
 	});
 	if (rating.data.length === 1) {

@@ -52,7 +52,7 @@ router.get('/order/:orderKey', async (req, res) => {
 		const orderId = decryptOrderId(orderKey);
 
 		// get order
-		const order = await wooCommerceApi.get(`/orders/${orderId}`);
+		const order = await wooCommerceApi.get(`orders/${orderId}`);
 		const {
 			data,
 		}: {
@@ -60,7 +60,7 @@ router.get('/order/:orderKey', async (req, res) => {
 		} = order;
 		let products: ProductWithQuantity[] = [];
 		if (data.line_items) {
-			products = await wooCommerceApi.get('/products', {
+			products = await wooCommerceApi.get('products', {
 				include: data.line_items.map((item) => item.product_id).join(','),
 			});
 			// @ts-ignore
@@ -102,7 +102,7 @@ router.get('/', validateToken, async (req, res) => {
 
 		const user = req?.user;
 		const { page = 1, per_page = 5 } = req.query;
-		const orders = await wooCommerceApi.get('/orders', {
+		const orders = await wooCommerceApi.get('orders', {
 			customer: user.id,
 			page,
 			per_page,

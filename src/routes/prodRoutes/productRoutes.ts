@@ -66,7 +66,7 @@ router.get('/search/:name', async (req, res) => {
 			params['max_price'] = priceMax;
 		}
 
-		const response = await wooCommerceApi.get(`/products`, { params });
+		const response = await wooCommerceApi.get(`products`, { ...params });
 		// Send WooCommerce response to the client
 		await findProductsVariations(response.data);
 		res.status(200).json({
@@ -106,19 +106,19 @@ router.get('/product/:slug', async (req, res) => {
 	const { slug } = req.params;
 	try {
 		// get slug of product
-		const response = await wooCommerceApi.get(`/products?slug=${slug}`, {
+		const response = await wooCommerceApi.get(`products?slug=${slug}`, {
 			...paramsProduct,
 		});
 		const product = response.data[0];
 
 		if (product?.variations.length > 0) {
 			const variationsResponse = await wooCommerceApi.get(
-				`/products/${product.id}/variations`
+				`products/${product.id}/variations`
 			);
 			product.variations = variationsResponse.data;
 		}
 
-		const rating = await wooCommerceApi.get(`/products/reviews`, {
+		const rating = await wooCommerceApi.get(`products/reviews`, {
 			product: product.id,
 		});
 		if (rating.data.length === 1) {
@@ -137,7 +137,7 @@ router.get('/product/:slug', async (req, res) => {
 
 router.get('/all', async (req, res) => {
 	try {
-		const response = await wooCommerceApi.get('/products', {
+		const response = await wooCommerceApi.get('products', {
 			...paramsProduct,
 		});
 		const products = response.data;

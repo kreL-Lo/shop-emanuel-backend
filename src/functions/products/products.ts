@@ -4,7 +4,7 @@ import { ProductItem } from './computeProductItemsTotalPrice';
 export const getAllProducts = async (productItems: ProductItem[]) => {
 	try {
 		const productIds = productItems.map((item) => item.productId);
-		const products = await wooCommerceApi.get(`/products`, {
+		const products = await wooCommerceApi.get(`products`, {
 			include: productIds.join(','),
 		});
 		let productData = [];
@@ -20,7 +20,7 @@ export const getAllProducts = async (productItems: ProductItem[]) => {
 				//variation
 				if (item.variationId) {
 					const variationData = await wooCommerceApi.get(
-						`/products/${item.productId}/variations/${item.variationId}`
+						`products/${item.productId}/variations/${item.variationId}`
 					);
 
 					const variation = variationData.data;

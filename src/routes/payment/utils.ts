@@ -5,7 +5,7 @@ export const updateOrderLineItems = async (
 	bundleItems: any[],
 	orderId: string
 ) => {
-	const order = await wooCommerceApi.get(`/orders/${orderId}`);
+	const order = await wooCommerceApi.get(`orders/${orderId}`);
 	const orderPayload = order.data as Order;
 
 	const existingOrderItems = order.data.line_items.map((item: any) => ({

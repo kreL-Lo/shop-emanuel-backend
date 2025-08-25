@@ -29,7 +29,7 @@ router.get('/:productId', async (req, res) => {
 			params.rating = rating;
 		}
 
-		const response = await wooCommerceApi.get('/products/reviews', {
+		const response = await wooCommerceApi.get('products/reviews', {
 			...params,
 		});
 
@@ -73,7 +73,7 @@ router.get('/starsCount/:productId', async (req, res) => {
 		const { productId } = req.params;
 		//get product
 
-		const data = await wooCommerceApi.get(`/products/${productId}`, {
+		const data = await wooCommerceApi.get(`products/${productId}`, {
 			...paramsProduct,
 		});
 		const product: Product = data.data;
@@ -81,7 +81,7 @@ router.get('/starsCount/:productId', async (req, res) => {
 			return res.status(404).json({ message: 'Product not found' });
 		}
 
-		const response = await wooCommerceApi.get('/products/reviews', {
+		const response = await wooCommerceApi.get('products/reviews', {
 			product: productId,
 			per_page: 100,
 		});
@@ -134,7 +134,7 @@ router.post('/', validateToken, async (req, res) => {
 		const user = req.user as Customer;
 
 		const { product_id } = req.body;
-		const orders = await wooCommerceApi.get('/orders', {
+		const orders = await wooCommerceApi.get('orders', {
 			customer_id: user.id,
 		});
 		const order = orders.data.find((order: Order) => {
@@ -151,7 +151,7 @@ router.post('/', validateToken, async (req, res) => {
 
 		// count how many review have been made by reviewer
 		const { review, reviewer, reviewer_email, rating } = req.body;
-		const reviews = await wooCommerceApi.get(`/products/reviews/`, {
+		const reviews = await wooCommerceApi.get(`products/reviews/`, {
 			product: req.body.product_id,
 			reviewer_email: req.body.reviewer_email,
 		});
@@ -189,7 +189,7 @@ router.get('/allow/:productId', validateToken, async (req, res) => {
 		const { productId } = req.params;
 
 		//get user orders and check if the product is in the order
-		const orders = await wooCommerceApi.get('/orders', {
+		const orders = await wooCommerceApi.get('orders', {
 			customer_id: user.id,
 		});
 

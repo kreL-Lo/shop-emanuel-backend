@@ -12,7 +12,7 @@ const activeBatteryData = async (activeBat: number) => {
 	if (value) {
 		if (value?.skuTag) {
 			//get product with skuTag
-			const data = await wooCommerceApi.get(`/products?sku=${value.skuTag}`);
+			const data = await wooCommerceApi.get(`products?sku=${value.skuTag}`);
 
 			if (data.data.length > 0) {
 				return data.data[0];
@@ -135,8 +135,8 @@ router.post('/placeOrder', async (req, res) => {
 		};
 		//create
 
-		const product = await wooCommerceApi.post('/products', productData);
-		const grouppedProducts = await wooCommerceApi.get('/products', {
+		const product = await wooCommerceApi.post('products', productData);
+		const grouppedProducts = await wooCommerceApi.get('products', {
 			include: ids.join(','),
 		});
 

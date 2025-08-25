@@ -6,7 +6,7 @@ const route = Router();
 route.get('/stats', async (req, res) => {
 	//get highest product price
 	try {
-		const highestPrice = await wooCommerceApi.get('/products', {
+		const highestPrice = await wooCommerceApi.get('products', {
 			orderby: 'price',
 			order: 'desc',
 			per_page: 1,
@@ -15,7 +15,7 @@ route.get('/stats', async (req, res) => {
 		const maxPrice = highestPrice.data[0].price;
 
 		//get all categories
-		const categoriesgory = await wooCommerceApi.get('/products/categories', {
+		const categoriesgory = await wooCommerceApi.get('products/categories', {
 			per_page: 100,
 		});
 

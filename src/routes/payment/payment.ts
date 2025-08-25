@@ -37,7 +37,7 @@ router.post('/check-client-secret', async (req, res) => {
 		const bundleKey = req.body.bundleKey;
 		const paymentIntendId = clientSecret.split('_secret')[0];
 		const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntendId);
-		const order = await wooCommerceApi.get(`/orders/${orderId}`);
+		const order = await wooCommerceApi.get(`orders/${orderId}`);
 		//test bundle key
 		// check metadata  of paymentIntend
 		if (paymentIntent.metadata.order_id !== orderId && order) {
@@ -171,12 +171,12 @@ router.post('/update-order-details', validateToken, async (req, res) => {
 
 		//get customer by id
 		// customer_id
-		const data = await wooCommerceApi.get(`/customers/${customer_id}`);
+		const data = await wooCommerceApi.get(`customers/${customer_id}`);
 		const customer: Customer = data.data;
 		if (!customer) {
 			res.status(500).send({ error: 'Internal eerror , no user found' });
 		}
-		const orderBlock = await wooCommerceApi.get(`/orders/${order.id}`);
+		const orderBlock = await wooCommerceApi.get(`orders/${order.id}`);
 		const actualOrder = orderBlock.data as Order;
 
 		try {

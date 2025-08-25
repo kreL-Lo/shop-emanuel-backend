@@ -10,7 +10,7 @@ router.get('/user', validateToken, async (req, res) => {
 	//@ts-ignore
 	const id = req.userId;
 	try {
-		const response = await wooCommerceApi.get(`/customers/${id}`);
+		const response = await wooCommerceApi.get(`customers/${id}`);
 		res.json(response.data);
 	} catch (error) {
 		//@ts-ignore
