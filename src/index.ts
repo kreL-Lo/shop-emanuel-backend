@@ -44,6 +44,7 @@ app.use((req, res, next) => {
 
 //@ts-ignore
 app.use((req, res, next) => {
+	console.log('Middleware triggered for:', req.method, req.url);
 	// Set Cache-Control headers
 	res.set(
 		'Cache-Control',
