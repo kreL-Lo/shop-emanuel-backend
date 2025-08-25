@@ -30,14 +30,7 @@ const wooCommerceApi = api;
 // fetch all products from WooCommerce //
 export async function fetchWooCommerceProducts() {
 	try {
-		const response = await wooCommerceApi.get('/products', {
-			// limit to 10 products
-			// first 10 products
-			// per_page: 10, // Limit to 10 products
-			// orderby: 'date', // Order by creation date
-			// order: 'desc', // Descending order (most recent first)
-			// ...paramsProduct,
-		});
+		const response = await wooCommerceApi.get('/products');
 		return response;
 	} catch (error) {
 		throw new Error(error);
