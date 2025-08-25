@@ -15,7 +15,7 @@ const accessToken = '';
 const accessTokenSecret = '';
 
 const api = new WooCommerceRestApi({
-	url: `http://81.181.166.178:8013`,
+	url: `https://cms.armondone.com`,
 	consumerKey: process.env.WOO_CONSUMER_KEY!,
 	consumerSecret: process.env.WOO_CONSUMER_SECRET!,
 	version: 'wc/v3',
