@@ -1,29 +1,32 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
 
 import allRoutes from './routes/index';
 import webHookRouter from './routes/payment/webhook';
 
 dotenv.config();
 const app = express();
-
-// Use a different port than Next.js dev server (3000)
 const PORT = process.env.PORT || 8000;
 
-// ---- CORS (allow everything) ----
-app.use(
-	cors({
-		origin: true, // reflect request origin
-		credentials: true,
-		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-		allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-	})
-);
+// (optional) if behind a proxy and using cookies
+app.set('trust proxy', 1);
 
-// Ensure proxies/caches treat per-origin separately
+// ---- Permissive CORS (reflect origin, allow credentials, handle preflight) ----
+// @ts-ignore
 app.use((req, res, next) => {
-	res.setHeader('Vary', 'Origin');
+	const origin = req.headers.origin || '*';
+	res.header('Access-Control-Allow-Origin', origin);
+	res.header('Vary', 'Origin');
+	res.header('Access-Control-Allow-Credentials', 'true');
+	res.header(
+		'Access-Control-Allow-Methods',
+		'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+	);
+	res.header(
+		'Access-Control-Allow-Headers',
+		'Content-Type, Authorization, X-Requested-With'
+	);
+	if (req.method === 'OPTIONS') return res.sendStatus(204);
 	next();
 });
 
@@ -31,11 +34,40 @@ app.use((req, res, next) => {
 const webhookRawBodyParser = express.raw({ type: 'application/json' });
 app.post('/webhook', webhookRawBodyParser, webHookRouter);
 
+// Request logging middleware
+app.use((req, res, next) => {
+	const startTime = Date.now();
+	const clientIP =
+		req.ip ||
+		req.connection.remoteAddress ||
+		req.socket.remoteAddress ||
+		(req.connection as any)?.socket?.remoteAddress ||
+		req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ||
+		req.headers['x-real-ip'] ||
+		'unknown';
+
+	console.log(
+		`[${new Date().toISOString()}] ${clientIP} - ${req.method} ${req.url}`
+	);
+
+	const originalEnd = res.end;
+	res.end = function (chunk?: any, encoding?: any, cb?: () => void) {
+		const duration = Date.now() - startTime;
+		console.log(
+			`[${new Date().toISOString()}] ${clientIP} - ${req.method} ${req.url} - ${
+				res.statusCode
+			} (${duration}ms)`
+		);
+		return originalEnd.call(this, chunk, encoding, cb);
+	};
+	next();
+});
+
 // ---- Regular body parser for rest ----
 app.use(express.json({ limit: '5mb' }));
 
-// ---- Optional cache-control / logging ----
-app.use((req, res, next) => {
+// ---- Optional cache-control ----
+app.use((_, res, next) => {
 	res.set(
 		'Cache-Control',
 		'no-store, no-cache, must-revalidate, proxy-revalidate'
