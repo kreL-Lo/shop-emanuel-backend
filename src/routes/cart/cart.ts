@@ -96,7 +96,7 @@ router.post('/items', async (req, res) => {
 
 				// @ts-ignore
 				const variations: { data: [ProductVariation] } = await wooCommerceApi
-					.get(`/products/${product.id}/variations`, {
+					.get(`products/${product.id}/variations`, {
 						include: productItems[product.id].join(','),
 						//@ts-ignore
 					})

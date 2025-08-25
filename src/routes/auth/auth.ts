@@ -13,22 +13,6 @@ require('dotenv').config();
 const router = express.Router();
 require('dotenv').config();
 
-setTimeout(async () => {
-	try {
-		// const testMail = 'ciprian.miru@gmail.com';
-		// const customer = await wooCommerceApi.get(`/customers?email=${testMail}`);
-		// const id = customer.data[0].id;
-		// await wooCommerceApi.put(`/customers/${id}`, {
-		// 	meta_data: [
-		// 		{
-		// 			key: 'reset_password_count',
-		// 			value: 0,
-		// 		},
-		// 	],
-		// });
-		// console.log('reset count to 0');
-	} catch (e) {}
-}, 2000);
 const WOO_BASE_URL = process.env.WOO_BASE_URL;
 
 const WP_URL = `${WOO_BASE_URL}/wp-json/jwt-auth/v1/token`;
