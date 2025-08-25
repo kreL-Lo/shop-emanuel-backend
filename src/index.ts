@@ -27,7 +27,15 @@ app.use(
 		allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 	})
 );
-
+app.use((req, res, next) => {
+	if (req.method === 'OPTIONS') {
+		console.log(`[PREFLIGHT] ${req.url} from Origin: ${req.headers.origin}`);
+	}
+	if (req.method === 'POST') {
+		console.log(`[POST] ${req.url} at ${new Date().toISOString()}`);
+	}
+	next();
+});
 // Ensure proxies/caches treat per-origin separately
 app.use((req, res, next) => {
 	res.setHeader('Vary', 'Origin');
