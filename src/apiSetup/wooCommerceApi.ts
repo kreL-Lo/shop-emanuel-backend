@@ -36,5 +36,4 @@ export async function fetchWooCommerceProducts() {
 		throw new Error(error);
 	}
 }
-fetchWooCommerceProducts();
 export default wooCommerceApi;
