@@ -5,7 +5,6 @@
 import crypto from 'crypto';
 import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
 import dotenv from 'dotenv';
-import { paramsProduct } from '../routes/prodRoutes/prodUtils';
 
 dotenv.config();
 
@@ -30,7 +29,8 @@ const wooCommerceApi = api;
 // fetch all products from WooCommerce //
 export async function fetchWooCommerceProducts() {
 	try {
-		const response = await wooCommerceApi.get('/products');
+		const response = await wooCommerceApi.get('products');
+		console.log('WooCommerce Products:', response.data);
 		return response;
 	} catch (error) {
 		throw new Error(error);

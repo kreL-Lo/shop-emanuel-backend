@@ -86,7 +86,7 @@ router.get('/search/:name', async (req, res) => {
 
 router.get('/noutati', async (req, res) => {
 	try {
-		const response = await wooCommerceApi.get('/products', {
+		const response = await wooCommerceApi.get('products', {
 			// limit to 10 products
 			// first 10 products
 			per_page: 10, // Limit to 10 products
