@@ -11,7 +11,7 @@ router.get('/specific-category/:query', async (req, res) => {
 	try {
 		const { query } = req.params;
 		//get category father
-		const response = await wooCommerceApi.get('/products/categories', {
+		const response = await wooCommerceApi.get('products/categories', {
 			slug: query,
 		});
 		const category: Category = response.data[0];
@@ -22,7 +22,7 @@ router.get('/specific-category/:query', async (req, res) => {
 		} else {
 			// get parent category
 			const parentResponse = await wooCommerceApi.get(
-				`/products/categories/${category.parent}`
+				`products/categories/${category.parent}`
 			);
 			// @ts-ignore
 			parentCategory = parentResponse.data;
@@ -38,13 +38,13 @@ router.get('/specific-category/:query', async (req, res) => {
 		};
 
 		// get products of category
-		const products = await wooCommerceApi.get('/products', {
+		const products = await wooCommerceApi.get('products', {
 			...queryProducts,
 		});
 		await findProductsVariations(products.data);
 
 		//get subcategories
-		const subCategories = await wooCommerceApi.get('/products/categories', {
+		const subCategories = await wooCommerceApi.get('products/categories', {
 			parent: parentCategory.id,
 		});
 
@@ -70,7 +70,7 @@ router.get('/specific-category/:query', async (req, res) => {
 // @ts-ignore
 router.get('/', async (req, res) => {
 	try {
-		const response = await wooCommerceApi.get('/products/categories', {
+		const response = await wooCommerceApi.get('products/categories', {
 			parent: 0,
 		});
 		// get all parent categories
@@ -79,14 +79,14 @@ router.get('/', async (req, res) => {
 		const data = await Promise.all(
 			// @ts-ignore
 			response.data.map(async (category) => {
-				const products = await wooCommerceApi.get('/products', {
+				const products = await wooCommerceApi.get('products', {
 					category: category.id,
 					per_page: 5,
 					...paramsProduct,
 				});
 
 				//get all subcategories
-				const subCategories = await wooCommerceApi.get('/products/categories', {
+				const subCategories = await wooCommerceApi.get('products/categories', {
 					parent: category.id,
 				});
 				await findProductsVariations(products.data);
@@ -109,7 +109,7 @@ router.get('/', async (req, res) => {
 // @ts-ignore
 router.get('/all', async (req, res) => {
 	try {
-		const response = await wooCommerceApi.get('/products/categories', {
+		const response = await wooCommerceApi.get('products/categories', {
 			parent: 0,
 		});
 		// get all parent categories
@@ -119,7 +119,7 @@ router.get('/all', async (req, res) => {
 			// @ts-ignore
 			response.data.map(async (category) => {
 				//get all subcategories
-				const subCategories = await wooCommerceApi.get('/products/categories', {
+				const subCategories = await wooCommerceApi.get('products/categories', {
 					parent: category.id,
 				});
 				return {
