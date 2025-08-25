@@ -11,18 +11,11 @@ const app = express();
 // Use a different port than Next.js dev server (3000)
 const PORT = process.env.PORT || 8000;
 
-const allowedOrigins = ['http://localhost:3000', 'https://armondone.com'];
-
-// ---- CORS FIRST ----
+// ---- CORS (allow everything) ----
 app.use(
 	cors({
-		origin: (origin, cb) => {
-			if (!origin) return cb(null, true); // allow curl / same-origin
-			return allowedOrigins.includes(origin)
-				? cb(null, true)
-				: cb(new Error('Not allowed by CORS'));
-		},
-		credentials: true, // required if frontend sets withCredentials: true
+		origin: true, // reflect request origin
+		credentials: true,
 		methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 		allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 	})
@@ -37,48 +30,6 @@ app.use((req, res, next) => {
 // ---- Webhook route (raw body parser) ----
 const webhookRawBodyParser = express.raw({ type: 'application/json' });
 app.post('/webhook', webhookRawBodyParser, webHookRouter);
-
-// Request logging middleware with IP address
-app.use((req, res, next) => {
-	const startTime = Date.now();
-
-	// Extract client IP address
-	const clientIP =
-		req.ip ||
-		req.connection.remoteAddress ||
-		req.socket.remoteAddress ||
-		(req.connection as any)?.socket?.remoteAddress ||
-		req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ||
-		req.headers['x-real-ip'] ||
-		'unknown';
-	console.log('here', res);
-	// Log the incoming request with IP
-	console.log(
-		`[${new Date().toISOString()}] ${clientIP} - ${req.method} ${req.url}`
-	);
-
-	// Capture the original end function
-	const originalEnd = res.end;
-
-	// Override the end function to log response
-	res.end = function (
-		chunk?: any,
-		encoding?: any,
-		cb?: (() => void) | undefined
-	) {
-		const duration = Date.now() - startTime;
-		console.log(
-			`[${new Date().toISOString()}] ${clientIP} - ${req.method} ${req.url} - ${
-				res.statusCode
-			} (${duration}ms)`
-		);
-
-		// Call the original end function and return its result
-		return originalEnd.call(this, chunk, encoding, cb);
-	};
-
-	next();
-});
 
 // ---- Regular body parser for rest ----
 app.use(express.json({ limit: '5mb' }));
